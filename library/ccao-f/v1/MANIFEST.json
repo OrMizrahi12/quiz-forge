@@ -1,0 +1,189 @@
+{
+ "library": "ccao-f/v1",
+ "created": "2026-10-07",
+ "note": "Final lesson notes of course #1 (CCAO-F), music credits removed. Frozen: never edited; a later snapshot is v2.",
+ "lessons": [
+  {
+   "lesson": "L0.1",
+   "title": "What the Claude Certified Associate certifies, and how the exam works",
+   "module": "Section 0: Start Here",
+   "objectives": [
+    "Explain what the Claude Certified Associate proves and who it's for.",
+    "Describe how the exam is built and scored: 60 items, 120 minutes, 720 of 1,000, seven weighted domains.",
+    "Turn the official blueprint into a study map with Claude, and check it against the source."
+   ],
+   "bytes": 4499,
+   "sha256": "bfcc9e050f0d410629fe6ff606da6d1e8f18d640494f5b690609e4b5886b9552",
+   "source": "L0.1-what-ccao-f-certifies/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L0.2",
+   "title": "The AI Fluency 4D framework",
+   "module": "Section 0: Start Here",
+   "objectives": [
+    "Name the four Ds and say what each one means.",
+    "Explain the two loops that connect them, and where each D lands on the exam.",
+    "Use all four on a real task in Claude: hand over, describe, check, and own the result."
+   ],
+   "bytes": 7461,
+   "sha256": "5363bc65883f73d84c337731bfa3f1c39385cbaf3da34418b6d7aebeff985c7e",
+   "source": "L0.2-ai-fluency-4d-framework/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L0.3",
+   "title": "Claude Desktop tour",
+   "module": "Section 0: Start Here",
+   "objectives": [
+    "Find your way around Claude Desktop: Chat, Cowork, Code and Settings.",
+    "Say in one line what each main tool does and where it lives.",
+    "Run your first chat, and switch models when the job changes."
+   ],
+   "bytes": 9976,
+   "sha256": "022ce4cdbac582d401ac42a7a246a109df1827bbc5b2b03dfbc840208840ec9c",
+   "source": "L0.3-claude-desktop-tour/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L1.1",
+   "title": "The four decisions before the first prompt",
+   "module": "Module 1: Platform & Model Foundations",
+   "objectives": [
+    "Name the four decisions you make before the first prompt: entry point, features, model and context.",
+    "Explain why they set the ceiling on what a prompt can do, and where each one sits on the exam.",
+    "Run a real task through all four, out loud, and check the result."
+   ],
+   "bytes": 11979,
+   "sha256": "6a6dfc1eeb173610ce7e30df38ffdc6eaabb47a78cc267498540f3f7aa5301a9",
+   "source": "L1.1-four-decisions-before-the-prompt/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L1.2",
+   "title": "Picking the right feature",
+   "module": "Module 1: Platform & Model Foundations",
+   "objectives": [
+    "Explain what each feature is for, and where it falls short.",
+    "Route any task with four questions.",
+    "Pick and combine features on a real job, then check the result."
+   ],
+   "bytes": 15305,
+   "sha256": "fb7463534e23f5522b27a0dc8e20c6937a2b44b83c236e7d88868069e72d508b",
+   "source": "L1.2-picking-the-right-feature/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L1.3",
+   "title": "Haiku, Sonnet, Opus",
+   "module": "Module 1: Platform & Model Foundations",
+   "objectives": [
+    "Tell Haiku, Sonnet and Opus apart: what each tier trades in capability, speed and cost.",
+    "Match a model, and its effort, to a job's cost, speed, quality and volume.",
+    "Run the same real job on all three and pick the right one from the evidence."
+   ],
+   "bytes": 15355,
+   "sha256": "626f56f519b5823047d36b04435cd44c7dd85b0a4d1587bdb08852dfd5f92e30",
+   "source": "L1.3-haiku-sonnet-opus/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L1.4",
+   "title": "Context limits and memory",
+   "module": "Module 1: Platform & Model Foundations",
+   "objectives": [
+    "Explain what a context window is, and what happens when a chat gets long.",
+    "Decide when to keep going, restart, summarize, or persist.",
+    "Hand a working chat to a fresh one, and choose what Claude remembers."
+   ],
+   "bytes": 16007,
+   "sha256": "035433030197ea27788f43455853cb94e01261f4260558ea7eb1e46184d200bd",
+   "source": "L1.4-context-limits-and-memory/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L2.1",
+   "title": "Anatomy of an effective prompt",
+   "module": "Module 2: Prompting & Task Execution",
+   "objectives": [
+    "Name the six parts of an effective prompt and the question each one answers.",
+    "Rebuild a vague prompt into a complete one, for a business task and a technical task.",
+    "Spot which missing part caused a weak answer, and fix that part."
+   ],
+   "bytes": 14492,
+   "sha256": "a6582aae8cea031e7fd83257b57bb05574ded539a697232bc1438d44f32be693",
+   "source": "L2.1-anatomy-of-an-effective-prompt/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L2.2",
+   "title": "Task decomposition",
+   "module": "Module 2: Prompting & Task Execution",
+   "objectives": [
+    "Explain task decomposition and prompt chaining, and how each step's output feeds the next.",
+    "Split a real request into a short chain, with a checkpoint between steps.",
+    "Decide when to split, and when one prompt (and Claude's own thinking) is enough."
+   ],
+   "bytes": 15814,
+   "sha256": "9b678e15b5e52c81f9701388c85b3802677a24d220f2cbd3e83d71b33eb52d55",
+   "source": "L2.2-task-decomposition/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L2.3",
+   "title": "Iterating diagnostically",
+   "module": "Module 2: Prompting & Task Execution",
+   "objectives": [
+    "Read an answer against your success criteria, and name the symptom and its cause.",
+    "Change one thing per run, re-run, and tell whether that change fixed it.",
+    "Choose between editing the prompt, following up, and starting fresh."
+   ],
+   "bytes": 16530,
+   "sha256": "96c1cc20c4e5bf35bfb0c124dfbaec8030c88bdd99ed026fec5c004be54f42f0",
+   "source": "L2.3-iterating-diagnostically/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L2.4",
+   "title": "Strategy by task type: analysis, research, drafting, brainstorming",
+   "module": "Module 2: Prompting & Task Execution",
+   "objectives": [
+    "Tell the four task types apart by what good looks like for each.",
+    "Adapt the prompt, and pick the feature, for analysis, research, drafting and brainstorming.",
+    "Judge each kind of output by its own test."
+   ],
+   "bytes": 22880,
+   "sha256": "3a6f3e244b15127e619b4c7c886d7fad0a2994d9f826929cee0455bc0180f3d4",
+   "source": "L2.4-strategy-by-task-type/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L3.1",
+   "title": "Discernment: checking accuracy and completeness against the source and the brief",
+   "module": "Module 3: Evaluating & Validating Output",
+   "objectives": [
+    "Tell accuracy from completeness, and check each against the right reference.",
+    "Trace every claim to the source, and tick every requirement in the brief.",
+    "Turn what you find into one precise fix, and re-check only what changed."
+   ],
+   "bytes": 16334,
+   "sha256": "929742d869b725825c6458487e0e20e6a7894a6a98ab573b557ba46a0855c9ec",
+   "source": "L3.1-discernment-accuracy-completeness/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L3.2",
+   "title": "Hallucinations: fabricated citations, numbers, quotes, and why confidence is not evidence",
+   "module": "Module 3: Evaluating & Validating Output",
+   "objectives": [
+    "Explain what a hallucination is, and why fluent text can still be invented.",
+    "Spot the risky specifics (citations, numbers, quotes) and check each one against the source.",
+    "Set up a request so a gap gets admitted, not filled."
+   ],
+   "bytes": 18239,
+   "sha256": "123d303dd7d1d3ce8f8bc0291c20ad100257974179c54ec28347d44ee724f9bc",
+   "source": "L3.2-hallucinations/final/lesson-notes.md"
+  },
+  {
+   "lesson": "L3.3",
+   "title": "Inconsistencies and bias: catching contradictions and skewed framing",
+   "module": "Module 3: Evaluating & Validating Output",
+   "objectives": [
+    "Spot inconsistencies: inside one answer, between answers, and against your source.",
+    "Recognize skewed framing, even when every fact is right.",
+    "Run the flip test, then ask for a fair answer when you need one."
+   ],
+   "bytes": 19504,
+   "sha256": "3f3603a0c4f5866172ab3292e1beb531b74c0a2e96cf5101cd26ade3dfdcf16f",
+   "source": "L3.3-inconsistencies-and-bias/final/lesson-notes.md"
+  }
+ ]
+}
