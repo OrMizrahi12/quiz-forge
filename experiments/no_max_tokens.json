@@ -1,0 +1,7 @@
+{
+  "model": "claude-haiku-4-5",
+  "system": "You write quiz questions for developers.",
+  "messages": [
+    {"role": "user", "content": "Write one quiz question about HTTP status codes. Reply with the question only."}
+  ]
+}
