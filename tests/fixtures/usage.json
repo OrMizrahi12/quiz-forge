@@ -1,0 +1,10 @@
+[
+ {"name": "plain request (Lesson 1.8, task 1 write)", "model": "claude-haiku-4-5-20251001",
+  "usage": {"input_tokens": 4376, "output_tokens": 159, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0}, "cost": 0.005171},
+ {"name": "cache write (Lesson 1.8)", "model": "claude-haiku-4-5-20251001",
+  "usage": {"input_tokens": 28, "output_tokens": 379, "cache_creation_input_tokens": 4346, "cache_read_input_tokens": 0}, "cost": 0.0073555},
+ {"name": "cache read (Lesson 1.8)", "model": "claude-haiku-4-5-20251001",
+  "usage": {"input_tokens": 28, "output_tokens": 341, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 4346}, "cost": 0.0021676},
+ {"name": "Haiku 5.5 (Lesson 1.8)", "model": "claude-haiku-5-5",
+  "usage": {"input_tokens": 5808, "output_tokens": 794, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0}, "cost": 0.0009778}
+]

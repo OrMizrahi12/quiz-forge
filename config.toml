@@ -1,0 +1,17 @@
+# Quiz Forge v0 settings. Model IDs live here, never inline in the code.
+
+[model]
+writer = "claude-haiku-4-5-20251001"   # pinned snapshot: the course default (Haiku 4.5)
+
+[library]
+path = "library/ccao-f/v1"             # the frozen lesson-notes snapshot
+
+[limits]
+max_tokens = 1500        # the hard cap on each reply
+max_request_usd = 0.02   # refuse any request that could cost more than this (counted input + max_tokens)
+concurrency = 3          # calls in flight at once when generating for several lessons
+
+[generate]
+questions = 2            # practice questions per lesson
+usage_log = "runs/usage.jsonl"
+output_dir = "runs/items"
