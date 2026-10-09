@@ -19,6 +19,11 @@ class Config:
     usage_log: Path
     output_dir: Path
     rejected_dir: Path
+    rounds: int
+    max_turns: int
+    max_usd: float
+    bank: Path
+    similar: float
 
 
 def load_config(path=ROOT / "config.toml"):
@@ -36,4 +41,9 @@ def load_config(path=ROOT / "config.toml"):
         usage_log=ROOT / data["generate"]["usage_log"],
         output_dir=ROOT / data["generate"]["output_dir"],
         rejected_dir=ROOT / data["generate"]["rejected_dir"],
+        rounds=data["write"]["rounds"],
+        max_turns=data["write"]["max_turns"],
+        max_usd=data["write"]["max_usd"],
+        bank=ROOT / data["bank"]["path"],
+        similar=data["bank"]["similar"],
     )

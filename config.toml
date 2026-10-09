@@ -21,3 +21,12 @@ retries = 2              # repair attempts after the first; then the lesson is r
 usage_log = "runs/usage.jsonl"
 output_dir = "runs/items"
 rejected_dir = "runs/rejected"
+
+[write]
+rounds = 3               # drafts per job: the first, then up to 2 revisions after the checker's verdicts
+max_turns = 10           # requests in one writer or checker run
+max_usd = 0.15           # the whole job's budget, writer and checker together: spent, plus the next request's worst case
+
+[bank]
+path = "bank"            # pending/ (written by write), approved/ and declined/ (written only by review)
+similar = 0.4            # item memory: a stem whose word overlap with a known stem is 40% or more is refused

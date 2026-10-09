@@ -2,15 +2,15 @@ import argparse
 import asyncio
 import json
 import re
+import sys
 
-from quizforge import usage
+from quizforge import batch, review, sources, usage, write
 from quizforge.client import make_client
 from quizforge.config import ROOT, load_config
-from quizforge import batch
 from quizforge.evidence import evidence
 from quizforge.generate import generate_many, generate_one
 from quizforge.library import lesson_ids
-from quizforge.sources import review
+from quizforge.meter import Meter
 from quizforge.prompts import PromptChanged, digest, load_prompt, lock, locked, versions
 
 
@@ -74,7 +74,7 @@ def saved(cfg, lesson_id):
 def check_items(cfg, prices, lesson_id):
     """Claude checks each saved question's quote with our check_quote tool, then judges it."""
     result = saved(cfg, lesson_id)
-    verdicts, calls, usages = review(make_client(), cfg, lesson_id, result["questions"])
+    verdicts, calls, usages = sources.review(make_client(), cfg, lesson_id, result["questions"])
     spent = sum(usage.cost(prices, cfg.model, u) for u in usages)
     for line in verdicts:
         print(line)
@@ -123,6 +123,40 @@ def batch_collect(cfg, prices, batch_id=None):
     return 0 if passed == len(results) else 1
 
 
+def write_lesson(cfg, prices, lesson_id):
+    """The draft -> check -> revise job for one lesson. Its questions wait in bank/pending/ for review."""
+    meter = Meter(make_client(), prices, cfg.model, log=cfg.usage_log)
+    try:
+        result = write.write(meter, cfg, lesson_id)
+    except write.Waiting as error:
+        raise SystemExit(str(error))
+    job = result.job
+    print(f"\nstopped: {result.stopped} ({result.who}, round {result.rounds} of {cfg.rounds})")
+    if job.questions:
+        backed = sum(sources.supported(line) for line in job.verdicts)
+        print(f"{len(job.questions)} question(s) in bank/pending/{job.path.name}, {backed} supported by the checker: "
+              f"waiting for review (python -m quizforge review --lesson {lesson_id})")
+    print(f"{meter.requests} request(s), {meter.tokens_in:,} input tokens, ${meter.cost:.5f}")
+    return 0 if result.stopped == "done" else 1
+
+
+def ask_person(prompt):
+    """input(), with the answer echoed when it comes from a pipe, so the transcript shows it."""
+    answer = input(prompt)
+    if not sys.stdin.isatty():
+        print(answer)
+    return answer
+
+
+def review_pending(cfg, lessons):
+    if not review.pending(cfg, lessons):
+        print("nothing waiting in bank/pending/")
+        return 0
+    decided = review.review(cfg, lessons, ask=ask_person)
+    print("\n" + ", ".join(f"{lesson} {state}" for lesson, state in decided.items()))
+    return 0
+
+
 def report(result):
     print(f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}")
 
@@ -147,6 +181,10 @@ def main(argv=None):
     bsend.add_argument("--lesson", action="append", help="a lesson id (repeat for several)")
     bget = bsub.add_parser("collect", help="match, check and save the results; repair failures in realtime")
     bget.add_argument("--batch", help="a batch id (default: the last one submitted)")
+    wri = sub.add_parser("write", help="the writer agent drafts, a checker subagent checks, the writer revises; into bank/pending/")
+    wri.add_argument("--lesson", required=True)
+    rev = sub.add_parser("review", help="a person approves or declines pending questions, one lesson at a time")
+    rev.add_argument("--lesson", action="append", help="a lesson id (default: every lesson waiting)")
     sub.add_parser("model", help="check the pinned model against the Models API")
     sub.add_parser("cost", help="total spend from the usage log")
     args = parser.parse_args(argv)
@@ -172,6 +210,14 @@ def main(argv=None):
         show_prompts(cfg)
     elif args.command == "show":
         show_items(cfg, args.lesson)
+    elif args.command == "write":
+        try:
+            load_prompt(cfg.prompts, cfg.prompt)   # a changed or unlocked prompt stops here, before any call
+        except (PromptChanged, ValueError) as error:
+            raise SystemExit(str(error))
+        return write_lesson(cfg, prices, args.lesson)
+    elif args.command == "review":
+        return review_pending(cfg, args.lesson)
     elif args.command == "check":
         return check_items(cfg, prices, args.lesson)
     elif args.command == "evidence":

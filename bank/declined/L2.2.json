@@ -1,0 +1,35 @@
+{
+  "lesson": "L2.2",
+  "questions": [
+    {
+      "scenario": "A marketing team asks you to analyze customer feedback from 200 emails, categorize the issues, identify the top complaints, and draft a response template\u2014all in one prompt. You run it and get a template back. However, you're unsure whether the top complaints are actually the most common or if there's an error in the categorization that went undetected. What should you do?",
+      "a": "Run the same prompt again on a more capable model to double-check the accuracy.",
+      "b": "Ask Claude to add 'think step by step' before generating the template.",
+      "c": "Decompose the task: ask Claude to categorize and count the issues first, review those results, then ask for the response template based on the verified counts.",
+      "d": "Send each email individually to Claude for categorization, then combine the results manually.",
+      "answer": "C",
+      "why": "A chain with a checkpoint after counting lets you verify the intermediate output before the final step, catching categorization errors before they affect the template. Option A wastes a bigger model on the same blind spot. Option B relies on thinking, which happens invisibly inside one reply. Option D splits too far\u2014categorization depends on seeing all emails together.",
+      "quote": "Between two steps you can read one, fix it, and only then continue.",
+      "section": "L2.2#the-idea",
+      "verdict": "supported",
+      "model": "claude-haiku-4-5-20251001",
+      "prompt": "v4",
+      "declined": "2026-10-09T15:15:00+00:00"
+    },
+    {
+      "scenario": "A project manager needs to extract action items from meeting notes, summarize each action's dependencies, order them by priority, and create a timeline. She's uncertain whether to send this all at once or break it into steps. She knows the task is complex and multistage. Which approach should she choose?",
+      "a": "Send it all in one prompt; Claude's thinking will handle the reasoning internally.",
+      "b": "Break it into separate prompts where she can inspect the extracted actions and dependencies before Claude creates the timeline.",
+      "c": "Use numbered steps inside one prompt to keep everything in order without extra waiting.",
+      "d": "Ask Claude to think harder by increasing effort settings before sending the single prompt.",
+      "answer": "B",
+      "why": "Explicit chaining with a checkpoint is useful when you need to inspect intermediate outputs and verify accuracy between steps. Thinking happens invisibly within one reply (A). Numbered steps in one prompt don't let you steer midway (C). Effort settings don't replace the value of seeing and validating in-between results (D).",
+      "quote": "Claude handles most multistep reasoning internally; explicit chaining is still useful when you need to inspect intermediate outputs.",
+      "section": "L2.2#straight-from-the-source-(what-the-lesson-shows)",
+      "verdict": "supported",
+      "model": "claude-haiku-4-5-20251001",
+      "prompt": "v4",
+      "declined": "2026-10-09T15:15:00+00:00"
+    }
+  ]
+}

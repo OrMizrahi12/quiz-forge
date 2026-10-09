@@ -66,15 +66,28 @@ REVIEW = ("You review practice questions written from one lesson. For each quest
           "per question, exactly: 'Question <n>: supported' or 'Question <n>: not supported: <reason>'.")
 
 
+def shown(lesson_id, questions):
+    """What the reviewer sees: each question, the key, and its quote. Not the writer's reasons, not its conversation."""
+    return "\n\n".join(f"Question {n}: {q['scenario']}\nA) {q['a']}\nB) {q['b']}\nC) {q['c']}\nD) {q['d']}\n"
+                       f"Correct: {q['answer']}\nQuote from {lesson_id}: \"{q['quote']}\"" for n, q in enumerate(questions, 1))
+
+
+def verdicts(text):
+    """The verdict lines of a reply: 'Question <n>: supported' or 'Question <n>: not supported: <reason>'."""
+    return [line.strip() for line in text.splitlines() if line.strip().startswith("Question ")]
+
+
+def supported(line):
+    return line.rstrip(". ").endswith(": supported")
+
+
 def review(client, cfg, lesson_id, questions, max_turns=4, out=print):
     """A manual tool loop: Claude checks every quote through our tool, then judges each question.
 
     Returns (verdicts, calls, usages): one 'supported'/'not supported' line per question, the number of
     check_quote calls, and each reply's usage.
     """
-    shown = "\n\n".join(f"Question {n}: {q['scenario']}\nA) {q['a']}\nB) {q['b']}\nC) {q['c']}\nD) {q['d']}\n"
-                        f"Correct: {q['answer']}\nQuote from {lesson_id}: \"{q['quote']}\"" for n, q in enumerate(questions, 1))
-    messages, calls, usages = [{"role": "user", "content": shown}], 0, []
+    messages, calls, usages = [{"role": "user", "content": shown(lesson_id, questions)}], 0, []
     for turn in range(1, max_turns + 1):
         reply = client.messages.create(model=cfg.model, max_tokens=800, system=REVIEW,
                                        tools=tools(cfg.library), messages=messages)
@@ -82,9 +95,7 @@ def review(client, cfg, lesson_id, questions, max_turns=4, out=print):
         uses = [block for block in reply.content if block.type == "tool_use"]
         out(f"  turn {turn}: {reply.stop_reason}, {len(uses)} check_quote call(s)")
         if reply.stop_reason != "tool_use":
-            text = "".join(block.text for block in reply.content if block.type == "text")
-            verdicts = [line.strip() for line in text.splitlines() if line.strip().startswith("Question ")]
-            return verdicts, calls, usages
+            return verdicts("".join(block.text for block in reply.content if block.type == "text")), calls, usages
         calls += len(uses)
         results = run_all(cfg.library, uses)
         for result in results:

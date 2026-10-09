@@ -1,0 +1,35 @@
+{
+  "lesson": "L1.3",
+  "questions": [
+    {
+      "scenario": "Your team processes 10,000 customer service emails per day, each requiring a brief, friendly acknowledgment. The emails are simple and straightforward. Which model should you start with?",
+      "a": "Opus, because it's the most capable and your customers deserve the best.",
+      "b": "Haiku, because these are short, simple jobs at high volume where speed and cost matter most.",
+      "c": "Sonnet, because it balances capability and cost evenly.",
+      "d": "Whichever is fastest on any given day, since volume is unpredictable.",
+      "answer": "B",
+      "why": "The job matches Haiku's profile: short, simple, high-volume work where speed and cost are the priorities. The lesson explicitly recommends Haiku for this type of job.",
+      "quote": "Short, simple jobs at volume, where speed and cost matter most",
+      "section": "L1.3#the-rule-and-the-map",
+      "verdict": "supported",
+      "model": "claude-haiku-4-5-20251001",
+      "prompt": "v4",
+      "approved": "2026-10-09T15:15:00+00:00"
+    },
+    {
+      "scenario": "A researcher needs to analyze one highly technical 100-page academic paper to identify potential flaws in the methodology. The accuracy of the analysis is critical, and time is not a constraint. Which model best fits this job?",
+      "a": "Haiku, to save tokens and complete the analysis quickly.",
+      "b": "Sonnet, as the everyday default that balances speed and capability.",
+      "c": "Opus, because complex reasoning is needed and accuracy outweighs the cost.",
+      "d": "Any model, since a single-use job doesn't multiply costs.",
+      "answer": "C",
+      "why": "This is a one-off job where quality and accuracy are everything. The lesson recommends Opus for scenarios where complex reasoning is required and being right outweighs cost considerations.",
+      "quote": "Complex reasoning, where being right outweighs the cost",
+      "section": "L1.3#the-rule-and-the-map",
+      "verdict": "supported",
+      "model": "claude-haiku-4-5-20251001",
+      "prompt": "v4",
+      "approved": "2026-10-09T15:15:00+00:00"
+    }
+  ]
+}
