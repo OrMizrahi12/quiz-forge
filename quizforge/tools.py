@@ -2,16 +2,12 @@ import html
 import json
 import re
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
-
-import anthropic
-from dotenv import load_dotenv
 
 from quizforge.config import load_config
 from quizforge.library import lesson_ids, load_lesson
 
-load_dotenv()
-client = anthropic.Anthropic()
 cfg = load_config()
 MANIFEST = json.loads((cfg.library / "MANIFEST.json").read_text())["lessons"]
 
@@ -27,7 +23,8 @@ def read_lesson(lesson_id):
 def check_source(url):
     """An external system: our code makes the request, with a host allowlist and a timeout."""
     if urlparse(url).scheme != "https" or urlparse(url).hostname not in ("support.claude.com", "platform.claude.com"):
-        raise ValueError(f"not an allowed source: {url}")
+        raise ValueError(f"not an allowed source: {url}. Only https pages on support.claude.com or "
+                         "platform.claude.com can be checked: report it as not checked.")
     request = urllib.request.Request(url, headers={"User-Agent": "quiz-forge/0.2"})
     with urllib.request.urlopen(request, timeout=10) as page:
         title = re.search(r"<title[^>]*>(.*?)</title>", page.read(200_000).decode("utf-8", "replace"), re.S)
@@ -53,19 +50,11 @@ def run(call):
         content, error = DISPATCH[call.name](**call.input), False
     except Exception as problem:
         content, error = f"{type(problem).__name__}: {problem}", True
-    print(f"    {call.name}({json.dumps(call.input)}) -> {'ERROR ' if error else ''}{content[:70]!r}")
+    print(f"    {call.name}: {'ERROR ' if error else ''}{content[:50]!r}")
     return {"type": "tool_result", "tool_use_id": call.id, "content": content, "is_error": error}
 
 
-messages = [{"role": "user", "content": "Find the lesson about hallucinations and write one practice question about it. "
-                                        "Then check that one support.claude.com source the lesson cites is live."}]
-for turn in range(1, 9):   # a limit: a loop that never ends is a bill that never ends
-    reply = client.messages.create(model=cfg.model, max_tokens=1500, tools=TOOLS, messages=messages)
-    print(f"request {turn}: stop_reason {reply.stop_reason}, {reply.usage.input_tokens} in, {reply.usage.output_tokens} out")
-    if reply.stop_reason != "tool_use":
-        break
-    messages += [{"role": "assistant", "content": reply.content},
-                 {"role": "user", "content": [run(block) for block in reply.content if block.type == "tool_use"]}]
-answer = next((block.text for block in reply.content if block.type == "text"), "")
-open("runs/tool_loop.md", "w").write(answer + "\n")
-print(f"answer: {len(answer)} characters -> runs/tool_loop.md")
+def run_all(calls):
+    """Every tool_use block of one reply, run at once; the results keep their order, for one user message."""
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        return list(pool.map(run, calls))
