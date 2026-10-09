@@ -1,0 +1,127 @@
+{
+ "library": "ccao-f/v1-docs",
+ "created": "2026-10-09",
+ "note": "PDFs rendered from ccao-f/v1 (same text), and one slide from course #1 Lesson 3.2. Never edited.",
+ "files": [
+  {
+   "file": "L0.1.pdf",
+   "lesson": "L0.1",
+   "title": "What the Claude Certified Associate certifies, and how the exam works",
+   "pages": 3,
+   "bytes": 78222,
+   "sha256": "de24e58a7d76daef79f727888d984a1e599dacb8cd3753708cfe718bce330048"
+  },
+  {
+   "file": "L0.2.pdf",
+   "lesson": "L0.2",
+   "title": "The AI Fluency 4D framework",
+   "pages": 4,
+   "bytes": 91879,
+   "sha256": "6c76c804d7dba9eff9deef384e029259ef6fc1441249c9c309bd742ca914df6f"
+  },
+  {
+   "file": "L0.3.pdf",
+   "lesson": "L0.3",
+   "title": "Claude Desktop tour",
+   "pages": 5,
+   "bytes": 116952,
+   "sha256": "8bece1a2646462c21aaf25d43f83cf7cfa6dd8291b8eb0f25b089b063e2abcfe"
+  },
+  {
+   "file": "L1.1.pdf",
+   "lesson": "L1.1",
+   "title": "The four decisions before the first prompt",
+   "pages": 3,
+   "bytes": 108673,
+   "sha256": "db6227b70f11ca6daaf7d3b1698ba4e3cb46f1ffc8b5676c54c09180c5f93729"
+  },
+  {
+   "file": "L1.2.pdf",
+   "lesson": "L1.2",
+   "title": "Picking the right feature",
+   "pages": 4,
+   "bytes": 145570,
+   "sha256": "5d02abbc7d0cd7dd38a9a08189689454b2adf6e4fbe90612f967fe72cc5ff42f"
+  },
+  {
+   "file": "L1.3.pdf",
+   "lesson": "L1.3",
+   "title": "Haiku, Sonnet, Opus",
+   "pages": 4,
+   "bytes": 135265,
+   "sha256": "c038cf97068beee713bee9099d926513ed5bc3eaff79abc42c8e9761d0d15a1a"
+  },
+  {
+   "file": "L1.4.pdf",
+   "lesson": "L1.4",
+   "title": "Context limits and memory",
+   "pages": 4,
+   "bytes": 128886,
+   "sha256": "2e444025a10a10b1290323e989ab4b311a7c5c776a42c23cac6eacfcf1d0b2ad"
+  },
+  {
+   "file": "L2.1.pdf",
+   "lesson": "L2.1",
+   "title": "Anatomy of an effective prompt",
+   "pages": 3,
+   "bytes": 122089,
+   "sha256": "e2939a8a4af72b9c5aafe0bbc2a67bf73c4ceafec37d61a66c1758b5b0add0b9"
+  },
+  {
+   "file": "L2.2.pdf",
+   "lesson": "L2.2",
+   "title": "Task decomposition",
+   "pages": 3,
+   "bytes": 110371,
+   "sha256": "390193860d3b295c95b767193ace704854b02712526f0f052f7131b3457d3ceb"
+  },
+  {
+   "file": "L2.3.pdf",
+   "lesson": "L2.3",
+   "title": "Iterating diagnostically",
+   "pages": 4,
+   "bytes": 123788,
+   "sha256": "c522f34d48d16e20369b63c895dce4ab7a392f93ba7423ca228602440b505051"
+  },
+  {
+   "file": "L2.4.pdf",
+   "lesson": "L2.4",
+   "title": "Strategy by task type: analysis, research, drafting, brainstorming",
+   "pages": 4,
+   "bytes": 145328,
+   "sha256": "c6c068ff5554fbede77d52ba4e55a1d1c638376060da455b49fd7aac77814f67"
+  },
+  {
+   "file": "L3.1.pdf",
+   "lesson": "L3.1",
+   "title": "Discernment: checking accuracy and completeness against the source and the brief",
+   "pages": 4,
+   "bytes": 125192,
+   "sha256": "a10b5f35f9c746677fe2b56596ead4b731d4ca24910f78dbc4594ef1b9321c57"
+  },
+  {
+   "file": "L3.2.pdf",
+   "lesson": "L3.2",
+   "title": "Hallucinations: fabricated citations, numbers, quotes, and why confidence is not evidence",
+   "pages": 4,
+   "bytes": 129969,
+   "sha256": "af4bd048bc7f990aba348dc9be74f3a1e8769c4fae1ae1cf5931cc75c64b1894"
+  },
+  {
+   "file": "L3.3.pdf",
+   "lesson": "L3.3",
+   "title": "Inconsistencies and bias: catching contradictions and skewed framing",
+   "pages": 4,
+   "bytes": 135544,
+   "sha256": "76b01e0de74b5ea629b957f05969a9a9c4ef1407e21628cfc0554a4f8cd65af2"
+  },
+  {
+   "file": "L3.2-slide.png",
+   "lesson": "L3.2",
+   "title": "A slide from the lesson video: The specifics",
+   "pages": null,
+   "bytes": 295727,
+   "sha256": "b93e2cd066b3726fef50399d8c87c445a5774f6c41256257d61f5e6e058e9168"
+  }
+ ]
+}
