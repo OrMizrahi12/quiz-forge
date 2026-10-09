@@ -1,78 +1,102 @@
 import asyncio
+import json
 import time
 from datetime import datetime, timezone
 
 from quizforge import usage
-from quizforge.client import make_client, stream_reply
+from quizforge.client import make_client
+from quizforge.config import ROOT
 from quizforge.library import load_lesson
+from quizforge.prompts import for_schema, load_prompt
+from quizforge.repair import Refused, RepairFailed, write_checked
+from quizforge.sanitize import clean
 
-SYSTEM = "You write practice exam questions from course lesson notes. Use only facts stated in the lesson."
+
+class OverLimit(Exception):
+    """The request could cost more than max_request_usd: it isn't sent."""
 
 
-def ask(lesson_id: str, text: str, questions: int) -> list:
-    return [{"role": "user", "content": f"Lesson {lesson_id}:\n\n{text}\n\nWrite {questions} multiple-choice practice "
-             "questions about this lesson. For each one: the question, options A to D, the answer letter, and a "
-             "one-line explanation that quotes the lesson."}]
+def user_turn(lesson_id: str, text: str, questions: int) -> str:
+    """The lesson is data: cleaned, inside its own tags, with the ask after it."""
+    return f'<lesson id="{lesson_id}">\n{clean(text)}\n</lesson>\n\nWrite {questions} questions.'
 
 
 def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def _check_cost(cfg, prices, lesson_id, counted):
-    most = usage.worst_case(prices, cfg.model, counted, cfg.max_tokens)
-    if most > cfg.max_request_usd:
-        raise SystemExit(f"{lesson_id}: could cost ${most:.4f}, over the ${cfg.max_request_usd} limit")
-
-
-def _record(cfg, prices, label, message, request_id, counted, seconds):
-    return usage.log(cfg.usage_log, time=_now(), label=label, model=cfg.model, request_id=request_id,
-                     counted=counted, input=message.usage.input_tokens,
+def _record(cfg, prices, label, message, counted, seconds):
+    return usage.log(cfg.usage_log, time=_now(), label=label, model=cfg.model,
+                     request_id=getattr(message, "_request_id", None), counted=counted,
+                     input=message.usage.input_tokens,
                      cache_write=message.usage.cache_creation_input_tokens or 0,
                      cache_read=message.usage.cache_read_input_tokens or 0,
                      output=message.usage.output_tokens, cost=usage.cost(prices, cfg.model, message.usage),
                      seconds=round(seconds, 2))
 
 
-def generate_one(cfg, prices, lesson_id, out=print):
-    """One lesson: count first, check the cost limit, stream the questions, log every request."""
+def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
+    """One lesson: the locked prompt version, the cleaned lesson, a schema-checked reply, repairs with a limit.
+
+    Every attempt is cost-checked before it's sent and logged after. A lesson that passes is saved to
+    output_dir; one that's refused, over the limit or still failing after the last retry goes to rejected_dir.
+    """
+    version = version or cfg.prompt
+    system = for_schema(load_prompt(cfg.prompts, version))
+    lesson = clean(load_lesson(cfg.library, lesson_id))
+    client = client or make_client()
+    rows, counted = [], {}
+
+    def before(messages):
+        counted["last"] = client.messages.count_tokens(model=cfg.model, system=system, messages=messages).input_tokens
+        most = usage.worst_case(prices, cfg.model, counted["last"], cfg.max_tokens)
+        if most > cfg.max_request_usd:
+            raise OverLimit(f"could cost ${most:.4f}, over the ${cfg.max_request_usd} limit")
+
+    def after(attempt, message, seconds):
+        rows.append(_record(cfg, prices, f"{lesson_id} {version} attempt {attempt}", message, counted["last"], seconds))
+
+    result = {"lesson": lesson_id, "prompt": version, "model": cfg.model}
+    try:
+        data, attempts = write_checked(client, cfg.model, system, user_turn(lesson_id, lesson, cfg.questions),
+                                       lesson, cfg.questions, retries=cfg.retries, max_tokens=cfg.max_tokens,
+                                       out=lambda line: out(f"{lesson_id:5} {line.strip()}"), before=before, after=after)
+        result.update(status="passed", attempts=attempts, questions=data.model_dump()["questions"])
+    except RepairFailed as error:
+        result.update(status="rejected", attempts=len(rows), problems=error.found or [str(error)], last_reply=error.text)
+    except Refused as error:
+        result.update(status="refused", attempts=len(rows), problems=[str(error)])
+    except OverLimit as error:
+        result.update(status="over limit", attempts=len(rows), problems=[str(error)])
+    result["cost"] = round(sum(row["cost"] for row in rows), 6)
+    result["path"] = str(_save(cfg, result))
+    return result
+
+
+async def generate_many(cfg, prices, lesson_ids, version=None, out=print):
+    """Several lessons at once, at most cfg.concurrency in flight. The repair loop is a plain loop,
+    so each lesson runs in a worker thread; the client is shared (it's safe across threads)."""
     client = make_client()
-    messages = ask(lesson_id, load_lesson(cfg.library, lesson_id), cfg.questions)
-    counted = client.messages.count_tokens(model=cfg.model, system=SYSTEM, messages=messages).input_tokens
-    _check_cost(cfg, prices, lesson_id, counted)
-    start = time.perf_counter()
-    text, finals = stream_reply(client, model=cfg.model, system=SYSTEM, messages=messages, max_tokens=cfg.max_tokens,
-                                on_text=lambda chunk: out(chunk, end="", flush=True))
-    seconds = time.perf_counter() - start
-    rows = [_record(cfg, prices, f"{lesson_id} generate", m, request_id, counted, seconds) for m, request_id in finals]
-    _save(cfg, lesson_id, text)
-    return text, finals, rows
-
-
-async def generate_many(cfg, prices, lesson_ids, out=print):
-    """Several lessons at once: the async client, with at most cfg.concurrency calls in flight."""
-    client = make_client(asynchronous=True)
     limit = asyncio.Semaphore(cfg.concurrency)
     start = time.perf_counter()
 
     async def one(lesson_id):
         async with limit:
-            messages = ask(lesson_id, load_lesson(cfg.library, lesson_id), cfg.questions)
-            counted = (await client.messages.count_tokens(model=cfg.model, system=SYSTEM, messages=messages)).input_tokens
-            _check_cost(cfg, prices, lesson_id, counted)
-            began = time.perf_counter()
-            out(f"{began - start:6.2f} s  start  {lesson_id}")
-            message = await client.messages.create(model=cfg.model, max_tokens=cfg.max_tokens, system=SYSTEM, messages=messages)
-            row = _record(cfg, prices, f"{lesson_id} generate", message, message._request_id, counted, time.perf_counter() - began)
-            _save(cfg, lesson_id, next(b.text for b in message.content if b.type == "text"))
-            out(f"{time.perf_counter() - start:6.2f} s  done   {lesson_id}  {row['input']} in {row['output']} out "
-                f"${row['cost']:.5f}  {message.stop_reason}")
-            return row
+            out(f"{time.perf_counter() - start:6.2f} s  start  {lesson_id}")
+            result = await asyncio.to_thread(generate_one, cfg, prices, lesson_id, version, client, out)
+            out(f"{time.perf_counter() - start:6.2f} s  {result['status']:6} {lesson_id}  "
+                f"{result['attempts']} attempt(s)  ${result['cost']:.5f}")
+            return result
 
-    rows = await asyncio.gather(*(one(lesson_id) for lesson_id in lesson_ids))
-    return rows, time.perf_counter() - start
+    results = await asyncio.gather(*(one(lesson_id) for lesson_id in lesson_ids))
+    return results, time.perf_counter() - start
 
 
-def _save(cfg, lesson_id, text):
-    cfg.output_dir.mkdir(parents=True, exist_ok=True)
-    (cfg.output_dir / f"{lesson_id}.md").write_text(text + "\n")
+def _save(cfg, result):
+    """Passed items and rejected ones go to different folders; a new result replaces the lesson's old one."""
+    keep, drop = (cfg.output_dir, cfg.rejected_dir) if result["status"] == "passed" else (cfg.rejected_dir, cfg.output_dir)
+    keep.mkdir(parents=True, exist_ok=True)
+    (drop / f"{result['lesson']}.json").unlink(missing_ok=True)
+    path = keep / f"{result['lesson']}.json"
+    path.write_text(json.dumps(result, indent=2) + "\n")
+    return path.relative_to(ROOT) if path.is_relative_to(ROOT) else path

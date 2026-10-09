@@ -3,6 +3,7 @@
 Each version is measured with: python -m experiments.measure <version> 6
 Claude Haiku 4.5, lessons L1.3, L2.1 and L3.2, 6 runs each, checked by
 quizforge/validate.py. A few runs show a direction, not a rate.
+Once measured, a version is locked: python -m quizforge prompts --lock <version>.
 
 ## v4
 One change from v3: rule 4 says how the quote is checked.

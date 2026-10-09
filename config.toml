@@ -1,4 +1,4 @@
-# Quiz Forge v0 settings. Model IDs live here, never inline in the code.
+# Quiz Forge settings. Model IDs and prompt versions live here, never inline in the code.
 
 [model]
 writer = "claude-haiku-4-5-20251001"   # pinned snapshot: the course default (Haiku 4.5)
@@ -6,12 +6,18 @@ writer = "claude-haiku-4-5-20251001"   # pinned snapshot: the course default (Ha
 [library]
 path = "library/ccao-f/v1"             # the frozen lesson-notes snapshot
 
+[prompt]
+folder = "prompts/item_writer"
+item_writer = "v4"     # a locked version: to change the prompt, add and lock the next version, then point here
+
 [limits]
 max_tokens = 1500        # the hard cap on each reply
 max_request_usd = 0.02   # refuse any request that could cost more than this (counted input + max_tokens)
-concurrency = 3          # calls in flight at once when generating for several lessons
+concurrency = 3          # lessons in flight at once when generating for several
 
 [generate]
 questions = 2            # practice questions per lesson
+retries = 2              # repair attempts after the first; then the lesson is rejected
 usage_log = "runs/usage.jsonl"
 output_dir = "runs/items"
+rejected_dir = "runs/rejected"
