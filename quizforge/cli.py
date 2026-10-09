@@ -6,7 +6,11 @@ import re
 from quizforge import usage
 from quizforge.client import make_client
 from quizforge.config import ROOT, load_config
+from quizforge import batch
+from quizforge.evidence import evidence
 from quizforge.generate import generate_many, generate_one
+from quizforge.library import lesson_ids
+from quizforge.sources import review
 from quizforge.prompts import PromptChanged, digest, load_prompt, lock, locked, versions
 
 
@@ -60,6 +64,65 @@ def show_items(cfg, lesson_id):
         print(f"  problem: {problem}")
 
 
+def saved(cfg, lesson_id):
+    path = cfg.output_dir / f"{lesson_id}.json"
+    if not path.exists():
+        raise SystemExit(f"no passed questions for {lesson_id}: run generate --lesson {lesson_id}")
+    return json.loads(path.read_text())
+
+
+def check_items(cfg, prices, lesson_id):
+    """Claude checks each saved question's quote with our check_quote tool, then judges it."""
+    result = saved(cfg, lesson_id)
+    verdicts, calls, usages = review(make_client(), cfg, lesson_id, result["questions"])
+    spent = sum(usage.cost(prices, cfg.model, u) for u in usages)
+    for line in verdicts:
+        print(line)
+    print(f"{calls} check_quote call(s), {len(usages)} request(s), ${spent:.5f}")
+    result["review"] = verdicts
+    (cfg.output_dir / f"{lesson_id}.json").write_text(json.dumps(result, indent=2) + "\n")
+    return 0 if verdicts and all(line.endswith(": supported") for line in verdicts) else 1
+
+
+def show_evidence(cfg, prices, lesson_id):
+    """The lesson's PDF (uploaded once) and the passages, with pages, that support each answer."""
+    claims, used, uploaded = evidence(make_client(), cfg, lesson_id, saved(cfg, lesson_id)["questions"])
+    print(f"{lesson_id}.pdf: {'uploaded' if uploaded else 'reused by file_id'}, {used.input_tokens} input tokens, "
+          f"${usage.cost(prices, cfg.model, used):.5f}")
+    for claim in claims:
+        if claim["citations"]:
+            print(f"  {claim['text'][:90]}")
+        for text, page in claim["citations"]:
+            print(f"    [page {page}] {text[:80]!r}")
+
+
+def batch_submit(cfg, lessons):
+    reqs = list(batch.requests(cfg, lessons or lesson_ids(cfg.library)))
+    sent = batch.submit(make_client(), reqs)
+    print(f"{sent.id}: {len(reqs)} requests ({reqs[0]['custom_id']} ... {reqs[-1]['custom_id']}), {sent.processing_status}")
+
+
+def batch_collect(cfg, prices, batch_id=None):
+    """Matched by custom_id, checked in code; failures repaired in realtime. 'Come back later' if it hasn't ended."""
+    client = make_client()
+    batch_id = batch_id or batch.last_sent()["id"]
+    status = client.messages.batches.retrieve(batch_id)
+    counts = status.request_counts
+    if status.processing_status != "ended":
+        print(f"{batch_id}: {status.processing_status}, {counts.processing} processing. Come back later.")
+        return 2
+    took = (status.ended_at - status.created_at).total_seconds()
+    print(f"{batch_id} ended in {took:.0f} s: {counts.succeeded} succeeded, {counts.errored} errored, "
+          f"{counts.expired} expired, {counts.canceled} canceled")
+    results = [batch.finish(cfg, prices, client, *row) for row in batch.collect(client, cfg, batch_id)]
+    print()
+    for result in sorted(results, key=lambda r: r["lesson"]):
+        print(f"{result['lesson']:5} {result['status']:8} {result['via']:>5}, {result['attempts']} attempt(s), ${result['cost']:.5f}")
+    passed = sum(r["status"] == "passed" for r in results)
+    print(f"{passed} of {len(results)} passed, ${sum(r['cost'] for r in results):.5f}")
+    return 0 if passed == len(results) else 1
+
+
 def report(result):
     print(f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}")
 
@@ -74,6 +137,16 @@ def main(argv=None):
     show.add_argument("--lesson", required=True)
     prompts = sub.add_parser("prompts", help="list the prompt versions; --lock freezes one after you measure it")
     prompts.add_argument("--lock", metavar="VERSION")
+    chk = sub.add_parser("check", help="Claude checks a lesson's saved questions with the check_quote tool")
+    chk.add_argument("--lesson", required=True)
+    evi = sub.add_parser("evidence", help="the passages, with pages, that support each saved answer (PDF, citations)")
+    evi.add_argument("--lesson", required=True)
+    bat = sub.add_parser("batch", help="generate as a Message Batch: half the price, results within 24 hours")
+    bsub = bat.add_subparsers(dest="action", required=True)
+    bsend = bsub.add_parser("submit", help="one request per lesson (default: every lesson in the library)")
+    bsend.add_argument("--lesson", action="append", help="a lesson id (repeat for several)")
+    bget = bsub.add_parser("collect", help="match, check and save the results; repair failures in realtime")
+    bget.add_argument("--batch", help="a batch id (default: the last one submitted)")
     sub.add_parser("model", help="check the pinned model against the Models API")
     sub.add_parser("cost", help="total spend from the usage log")
     args = parser.parse_args(argv)
@@ -99,6 +172,19 @@ def main(argv=None):
         show_prompts(cfg)
     elif args.command == "show":
         show_items(cfg, args.lesson)
+    elif args.command == "check":
+        return check_items(cfg, prices, args.lesson)
+    elif args.command == "evidence":
+        show_evidence(cfg, prices, args.lesson)
+    elif args.command == "batch":
+        try:
+            load_prompt(cfg.prompts, cfg.prompt)
+        except (PromptChanged, ValueError) as error:
+            raise SystemExit(str(error))
+        if args.action == "submit":
+            batch_submit(cfg, args.lesson)
+        else:
+            return batch_collect(cfg, prices, args.batch)
     else:
         try:
             load_prompt(cfg.prompts, args.prompt or cfg.prompt)   # a changed or unlocked prompt stops here, before any call

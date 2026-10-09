@@ -21,14 +21,16 @@ class RepairFailed(Exception):
 
 
 def write_checked(client, model, system, ask, lesson, count, retries=2, max_tokens=2000, out=print,
-                  before=lambda messages: None, after=lambda attempt, message, seconds: None):
+                  before=lambda messages: None, after=lambda attempt, message, seconds: None, history=None):
     """Ask, check in code, and send the problems back until it passes, at most `retries` times.
 
     before(messages) runs before every request (the cost check); after(attempt, message, seconds) after
     every reply (the usage log), so a repair is counted and logged like the first attempt.
+    history: a conversation that already holds attempt 1 and its problems (a batch reply): the loop goes on from there.
     """
-    messages = [{"role": "user", "content": ask}]
-    for attempt in range(1, retries + 2):
+    messages = list(history) if history else [{"role": "user", "content": ask}]
+    found = []
+    for attempt in range((len(messages) + 1) // 2, retries + 2):
         before(messages)
         start = time.perf_counter()
         message = client.messages.create(model=model, max_tokens=max_tokens, system=system,
