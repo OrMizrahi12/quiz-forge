@@ -98,6 +98,8 @@ async def review(path, **changes):
 async def ask(item_id, question):
     """One follow-up in the review's own session."""
     saved = json.loads((RUNS / f"{item_id}.json").read_text())
+    if saved["verdict"]["item_id"] != item_id:  # one session per item: never continue another item's review
+        raise SystemExit(f"{item_id}: the saved session belongs to {saved['verdict']['item_id']}")
     async for message in query(prompt=question, options=options(resume=saved["session_id"])):
         if isinstance(message, ResultMessage):
             print(message.result)
