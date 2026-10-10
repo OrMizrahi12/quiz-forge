@@ -1,0 +1,30 @@
+{
+  "lesson": "L1.3",
+  "model": "claude-sonnet-5-5",
+  "prompt": "write-exam-item",
+  "questions": [
+    {
+      "scenario": "A marketing analyst runs a weekly report summary on Sonnet at Low effort. The summaries are a little thin, but the analyst has plenty of usage left and the model's speed is fine. What should they try first?",
+      "a": "Switch to Opus right away, since thin answers always mean the model is too small.",
+      "b": "Raise the effort level on Sonnet and check whether the summaries improve.",
+      "c": "Switch to Haiku, because a smaller model will write more thoroughly.",
+      "d": "Stay at Low effort, because effort has no effect on how thorough a reply is.",
+      "answer": "B",
+      "why": "Effort controls how thoroughly a model works on each reply, and the lesson says tuning it is often a better lever than switching models.",
+      "quote": "Tuning effort is often a better lever than switching models.",
+      "section": "L1.3#effort:-the-second-dial"
+    },
+    {
+      "scenario": "A support team trials Haiku on its real tickets to draft short replies. In the test, the drafts keep dropping the product names customers asked about. What does the lesson's rule say to do?",
+      "a": "Step up one tier to Sonnet, because Haiku fell short on quality for this task.",
+      "b": "Jump straight to Opus, because any miss means the job needs the largest model.",
+      "c": "Keep Haiku, because the rule says to never change a model once chosen.",
+      "d": "Run the job on all three models every time and keep what two of them agree on.",
+      "answer": "A",
+      "why": "The rule starts with the smallest tier that can clearly do the job and steps up only where quality falls short, one tier at a time.",
+      "quote": "Step up only where quality falls short.",
+      "section": "L1.3#the-rule-and-the-map"
+    }
+  ],
+  "verdicts": []
+}
