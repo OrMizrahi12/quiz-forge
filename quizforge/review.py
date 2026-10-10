@@ -72,6 +72,10 @@ def review(cfg, lessons=None, ask=input, out=print):
     for path in pending(cfg, lessons):
         item = json.loads(path.read_text())
         show(item, out)
+        saved = cfg.bank.parent / "runs" / "reviews" / path.name
+        if saved.exists():
+            v = json.loads(saved.read_text())["verdict"]
+            out(f"\n   SDK reviewer: {v['verdict']}: {'; '.join(v['reasons']) or 'no problems found'}")
         try:
             answer = (
                 ask(f"\nApprove these {len(item['questions'])} question(s) for {item['lesson']}? [y/n] ")
