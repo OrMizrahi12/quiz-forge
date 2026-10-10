@@ -2,6 +2,7 @@
 
 [model]
 writer = "claude-haiku-4-5-20251001"   # pinned snapshot: the course default (Haiku 4.5)
+reviewer = "claude-sonnet-5-5"         # the Agent SDK reviewer (Sonnet 5.5: Haiku 4.5 failed sound questions)
 
 [library]
 path = "library/ccao-f/v1"             # the frozen lesson-notes snapshot
@@ -30,3 +31,7 @@ max_usd = 0.15           # the whole job's budget, writer and checker together: 
 [bank]
 path = "bank"            # pending/ (written by write), approved/ and declined/ (written only by review)
 similar = 0.4            # item memory: a stem whose word overlap with a known stem is 40% or more is refused
+
+[review]
+max_turns = 12           # the Agent SDK reviewer: turns per review
+max_usd = 0.30           # and its budget per review
