@@ -28,3 +28,17 @@ def test_a_verdict_must_be_pass_or_fail():
     Verdict.model_validate({"item_id": "L1.3", "verdict": "fail", "reasons": ["key names a wrong option"], "rule": "2"})
     with pytest.raises(ValueError):
         Verdict.model_validate({"item_id": "L1.3", "verdict": "maybe", "reasons": [], "rule": None})
+
+
+def test_options_cannot_write():
+    opts = sdk_review.options()
+    assert opts.permission_mode == "dontAsk"
+    assert {"Write", "Edit", "Bash"} <= set(opts.disallowed_tools)
+    assert set(opts.allowed_tools) <= {"Read", "Glob", "Grep"}
+    assert opts.max_turns and opts.max_budget_usd
+
+
+def test_options_load_the_project_and_the_checklist():
+    opts = sdk_review.options()
+    assert opts.setting_sources == ["project"]
+    assert sdk_review.SKILL.endswith("write-exam-item") and sdk_review.SKILL in opts.skills

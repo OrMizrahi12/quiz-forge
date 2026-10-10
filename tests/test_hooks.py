@@ -47,3 +47,15 @@ def test_guard_blocks_claude_running_the_review():
 def test_stop_hook_lets_a_second_stop_through():
     run = hook("tests_on_stop.py", {"stop_hook_active": True})
     assert run.returncode == 0
+
+
+def test_guard_blocks_an_edit_in_approved():
+    run = hook("guard_approved.py", {"tool_name": "Edit", "tool_input": {"file_path": "bank/approved/L1.3.json"}})
+    assert run.returncode == 2
+
+
+def test_guard_blocks_a_recursive_copy_into_approved():
+    run = hook(
+        "guard_approved.py", {"tool_name": "Bash", "tool_input": {"command": "cp -r bank/pending bank/approved"}}
+    )
+    assert run.returncode == 2

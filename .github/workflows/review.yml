@@ -17,6 +17,9 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
+      - run: curl -fsSL https://claude.ai/install.sh | bash
+      - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: claude plugin validate ./plugin
   review:
     needs: test
     runs-on: ubuntu-latest

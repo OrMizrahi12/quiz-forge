@@ -8,24 +8,17 @@ import json
 import sys
 import tomllib
 from pathlib import Path
-from typing import Literal
 
 from claude_agent_sdk import ClaudeAgentOptions, HookMatcher, ResultMessage, SystemMessage, query
 from dotenv import load_dotenv
-from pydantic import BaseModel
+
+from reviewer.verdict import Verdict
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = tomllib.loads((ROOT / "config.toml").read_text())
 RUNS = ROOT / "runs" / "reviews"
 SCOPE = ("bank/", "library/", "plugin/", ".claude/rules/")
 SKILL = "quiz-forge-tools:write-exam-item"
-
-
-class Verdict(BaseModel):
-    item_id: str
-    verdict: Literal["pass", "fail"]
-    reasons: list[str]
-    rule: str | None
 
 
 async def stay_in_scope(input_data, tool_use_id, context):
