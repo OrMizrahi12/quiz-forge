@@ -9,7 +9,7 @@
       "b": "Ask Claude to rate its confidence in the summary.",
       "c": "Rewrite the prompt to say who will read it: new hires with no benefits background, who need plain words.",
       "d": "Add \"You are a world-class benefits expert\" at the top of the prompt.",
-      "answer": "D",
+      "answer": "C",
       "why": "The weak answer came from a missing audience, and naming the readers sets the words, depth and tone.",
       "quote": "It sets the words, the depth and the tone.",
       "section": "L2.1#key-terms"
