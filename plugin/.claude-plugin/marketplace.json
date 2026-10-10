@@ -1,0 +1,19 @@
+{
+  "name": "quiz-forge",
+  "description": "Quiz Forge's own Claude Code tools",
+  "owner": {
+    "name": "Or Mizrahi"
+  },
+  "plugins": [
+    {
+      "name": "quiz-forge-tools",
+      "source": "./quiz-forge-tools",
+      "version": "1.0.0"
+    },
+    {
+      "name": "qf-format",
+      "source": "./qf-format",
+      "version": "1.0.0"
+    }
+  ]
+}

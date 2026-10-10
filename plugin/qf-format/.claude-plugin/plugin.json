@@ -1,0 +1,6 @@
+{
+  "name": "qf-format",
+  "description": "Formats every Python file Claude edits with ruff.",
+  "version": "1.0.0",
+  "author": { "name": "Or Mizrahi" }
+}

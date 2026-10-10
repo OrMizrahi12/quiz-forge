@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-HOOKS = ROOT / ".claude" / "hooks"
+HOOKS = ROOT / "plugin" / "quiz-forge-tools" / "scripts"
 
 
 def hook(name, event):
