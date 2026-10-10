@@ -6,11 +6,13 @@ import sys
 from typing import Annotated, TypedDict
 
 from mcp.server import MCPServer
+from mcp.server.auth.settings import AuthSettings
 from mcp.server.mcpserver import Elicit, Resolve
 from mcp.server.mcpserver.exceptions import ResourceNotFoundError, ToolError
 from mcp.types import ToolAnnotations
-from pydantic import BaseModel, Field
+from pydantic import AnyHttpUrl, BaseModel, Field
 
+from mcp_server.auth import RESOURCE, HashedTokenVerifier
 from quizforge.config import load_config
 from quizforge.library import lesson_ids, load_lesson
 from quizforge.search import search_library
@@ -24,6 +26,13 @@ mcp = MCPServer(
     "quiz-library",
     instructions="Read-only access to the Quiz Forge lesson library: search it, read a lesson, "
     "get its objectives, and check that a quote is word for word.",
+    token_verifier=HashedTokenVerifier(),  # HTTP only: a pipe (stdio) has no Authorization header
+    auth=AuthSettings(
+        issuer_url=AnyHttpUrl("https://idp.example.com"),  # a placeholder: no identity provider here
+        resource_server_url=AnyHttpUrl(RESOURCE),
+        required_scopes=["library:read"],
+        validate_token_resource=True,
+    ),
 )
 
 
