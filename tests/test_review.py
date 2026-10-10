@@ -1,7 +1,7 @@
 import json
 from dataclasses import replace
 
-from quizforge import review
+from quizforge import cli, review
 from quizforge.config import load_config
 
 BASE = load_config()
@@ -78,3 +78,38 @@ def test_the_person_sees_each_question_its_citation_and_the_checkers_verdict(tmp
     shown = "\n".join(lines)
     assert "Quote (L1.3#the-idea)" in shown and "Checker: not supported: the quote is about cost" in shown
     assert "warning: the checker did not support every question" in shown
+
+
+def test_counts_pending_and_approved_per_lesson(tmp_path):
+    pending(tmp_path, "L2.2")
+    cfg = pending(tmp_path, "L1.3")
+    quiet(cfg, answers("y"), lessons=["L1.3"])
+    pending(tmp_path, "L1.3")
+    pending(tmp_path, "L3.1")
+    assert review.counts(cfg) == {"L1.3": {"pending": 1, "approved": 1}, "L2.2": {"pending": 1, "approved": 0},
+                                  "L3.1": {"pending": 1, "approved": 0}}
+    assert list(review.counts(cfg)) == ["L1.3", "L2.2", "L3.1"]
+
+
+def test_counts_on_an_empty_bank_is_empty(tmp_path):
+    assert review.counts(replace(BASE, bank=tmp_path)) == {}
+
+
+def test_counts_does_not_touch_the_bank(tmp_path):
+    cfg = pending(tmp_path, "L1.3")
+    before = sorted((p, p.read_text()) for p in tmp_path.rglob("*") if p.is_file())
+    review.counts(cfg)
+    assert sorted((p, p.read_text()) for p in tmp_path.rglob("*") if p.is_file()) == before
+    assert not (tmp_path / "approved").exists()
+
+
+def test_bank_prints_a_line_per_lesson_and_a_total(tmp_path, capsys):
+    cfg = pending(tmp_path, "L2.2")
+    quiet(pending(tmp_path, "L1.3"), answers("y"), lessons=["L1.3"])
+    cli.show_bank(cfg)
+    lines = capsys.readouterr().out.splitlines()
+    assert [line.split() for line in lines] == [["L1.3", "pending", "0", "approved", "1"],
+                                                ["L2.2", "pending", "1", "approved", "0"],
+                                                ["total", "pending", "1", "approved", "1"]]
+    cli.show_bank(replace(BASE, bank=tmp_path / "nowhere"))
+    assert capsys.readouterr().out == "bank is empty\n"

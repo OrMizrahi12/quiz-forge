@@ -157,6 +157,17 @@ def review_pending(cfg, lessons):
     return 0
 
 
+def show_bank(cfg):
+    found = review.counts(cfg)
+    if not found:
+        print("bank is empty")
+        return
+    for lesson, n in found.items():
+        print(f"{lesson:6} pending {n['pending']:3}   approved {n['approved']:3}")
+    print(f"{'total':6} pending {sum(n['pending'] for n in found.values()):3}   "
+          f"approved {sum(n['approved'] for n in found.values()):3}")
+
+
 def report(result):
     print(f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}")
 
@@ -185,6 +196,7 @@ def main(argv=None):
     wri.add_argument("--lesson", required=True)
     rev = sub.add_parser("review", help="a person approves or declines pending questions, one lesson at a time")
     rev.add_argument("--lesson", action="append", help="a lesson id (default: every lesson waiting)")
+    sub.add_parser("bank", help="how many questions are pending and approved, per lesson")
     sub.add_parser("model", help="check the pinned model against the Models API")
     sub.add_parser("cost", help="total spend from the usage log")
     args = parser.parse_args(argv)
@@ -218,6 +230,8 @@ def main(argv=None):
         return write_lesson(cfg, prices, args.lesson)
     elif args.command == "review":
         return review_pending(cfg, args.lesson)
+    elif args.command == "bank":
+        show_bank(cfg)
     elif args.command == "check":
         return check_items(cfg, prices, args.lesson)
     elif args.command == "evidence":

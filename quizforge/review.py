@@ -11,6 +11,15 @@ def pending(cfg, lessons=None):
     return [p for p in sorted((cfg.bank / "pending").glob("*.json")) if not lessons or p.stem in lessons]
 
 
+def counts(cfg):
+    """How many questions each lesson has in bank/pending/ and bank/approved/: {lesson: {"pending": n, "approved": n}}."""
+    found = {}
+    for folder in ("pending", "approved"):
+        for path in (cfg.bank / folder).glob("*.json"):
+            found.setdefault(path.stem, {"pending": 0, "approved": 0})[folder] = len(json.loads(path.read_text())["questions"])
+    return dict(sorted(found.items()))
+
+
 def verdict(item, n):
     """The checker's verdict on question n, without the 'Question n: ' prefix; 'not checked' if there is none."""
     lines = item.get("verdicts") or []
