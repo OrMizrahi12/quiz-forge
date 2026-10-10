@@ -1,0 +1,19 @@
+{
+  "lesson": "L1.1",
+  "model": "claude-sonnet-5-5",
+  "prompt": "write-exam-item",
+  "questions": [
+    {
+      "scenario": "A consultant opens Claude for a one-off market summary and first switches on Research, a Project and every connector, just in case. Which of the four decisions did they get wrong?",
+      "a": "Capability features: they switched on everything instead of what the job needs.",
+      "b": "Entry point: a market summary has to be handed off to Code.",
+      "c": "Model: only Opus is allowed to write summaries.",
+      "d": "Context: Claude can't see files from connectors at all.",
+      "answer": "A",
+      "why": "The features decision asks what the task needs beyond a conversation, and a one-off summary needs none of the extras.",
+      "quote": "Switch on what the job needs, not everything",
+      "section": "L1.1#the-four-decisions,-one-question-each"
+    }
+  ],
+  "verdicts": []
+}

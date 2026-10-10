@@ -1,0 +1,2 @@
+- [L1.3 first review](L1.3-first-review.md) — bank/pending/L1.3.json reviewed 2026-10-10, both questions passed
+- [L1.3 answer field mismatch](L1.3-answer-field-mismatch.md) — Q1 has answer C but why/quote indicate B is correct, critical error
