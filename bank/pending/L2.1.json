@@ -4,11 +4,11 @@
   "prompt": "write-exam-item",
   "questions": [
     {
-      "scenario": "An HR coordinator asks Claude to \"summarize this benefits policy\" for the new hires starting Monday. The reply is accurate but full of plan codes and legal wording that new hires won't follow. What is the most appropriate next step?",
-      "a": "Switch to a more capable model, since this one wrote the summary too technically.",
-      "b": "Ask Claude to rate its confidence in the summary.",
-      "c": "Rewrite the prompt to say who will read it: new hires with no benefits background, who need plain words.",
-      "d": "Add \"You are a world-class benefits expert\" at the top of the prompt.",
+      "scenario": "A clinic manager asks Claude to \"explain the new booking system\" in a message to the front-desk staff. The reply is correct, but it talks about API calls, time-slot objects and sync jobs, and the staff only use the booking screen. Which change to the prompt fixes this most directly?",
+      "a": "Add a limit: \"Keep it under 100 words.\"",
+      "b": "Ask for the answer as a table, one row per change.",
+      "c": "Say who will read it: front-desk staff who book patients all day and don't know the system's technical terms.",
+      "d": "Paste the system's release notes into the prompt as background, in <context> tags.",
       "answer": "C",
       "why": "The weak answer came from a missing audience, and naming the readers sets the words, depth and tone.",
       "quote": "It sets the words, the depth and the tone.",
