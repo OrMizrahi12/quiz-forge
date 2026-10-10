@@ -172,11 +172,16 @@ def show_bank(cfg):
     if not found:
         print("bank is empty")
         return
+    show_declined = any("declined" in n for n in found.values())  # the column appears once something is declined
+
+    def line(label, n):
+        text = f"{label:6} pending {n['pending']:3}   approved {n['approved']:3}"
+        return text + f"   declined {n.get('declined', 0):3}" if show_declined else text
+
     for lesson, n in found.items():
-        print(f"{lesson:6} pending {n['pending']:3}   approved {n['approved']:3}")
+        print(line(lesson, n))
     print(
-        f"{'total':6} pending {sum(n['pending'] for n in found.values()):3}   "
-        f"approved {sum(n['approved'] for n in found.values()):3}"
+        line("total", {key: sum(n.get(key, 0) for n in found.values()) for key in ("pending", "approved", "declined")})
     )
 
 

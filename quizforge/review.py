@@ -12,10 +12,15 @@ def pending(cfg, lessons=None):
     return [p for p in sorted((cfg.bank / "pending").glob("*.json")) if not lessons or p.stem in lessons]
 
 
+def pending_ids(cfg):
+    return [p.stem for p in pending(cfg)]
+
+
 def counts(cfg):
-    """How many questions each lesson has in bank/pending/ and bank/approved/: {lesson: {"pending": n, "approved": n}}."""
+    """How many questions each lesson has in bank/pending/ and approved/: {lesson: {"pending": n, "approved": n}}.
+    A lesson with questions in bank/declined/ also gets a "declined": n."""
     found = {}
-    for folder in ("pending", "approved"):
+    for folder in ("pending", "approved", "declined"):
         for path in (cfg.bank / folder).glob("*.json"):
             found.setdefault(path.stem, {"pending": 0, "approved": 0})[folder] = len(
                 json.loads(path.read_text())["questions"]
