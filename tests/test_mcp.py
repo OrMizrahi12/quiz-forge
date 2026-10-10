@@ -1,6 +1,7 @@
 """The library server, tested in memory: Client(mcp) talks to it with no process and no port."""
 import pytest
 from mcp import Client, MCPError
+from mcp.types import ElicitResult
 
 from mcp_server.server import mcp
 
@@ -23,7 +24,7 @@ async def test_three_tools_with_their_inputs(library):
     tools = {t.name: t for t in (await library.list_tools()).tools}
     assert sorted(tools) == ["check_quote", "get_objectives", "search_lessons"]
     assert tools["search_lessons"].input_schema["required"] == ["query"]
-    assert tools["check_quote"].input_schema["required"] == ["lesson_id", "quote"]
+    assert tools["check_quote"].input_schema["required"] == ["quote"]
 
 
 @pytest.mark.anyio
@@ -55,3 +56,17 @@ async def test_lessons_are_resources(library):
 async def test_write_items_prompt(library):
     prompt = await library.get_prompt("write-items", {"lesson_id": "L1.3"})
     assert "check_quote" in prompt.messages[0].content.text
+
+
+@pytest.mark.anyio
+async def test_no_lesson_asks_the_person():
+    asked = []
+
+    async def person(context, params):
+        asked.append(params.message)
+        return ElicitResult(action="accept", content={"lesson_id": "L1.3"})
+
+    async with Client(mcp, elicitation_callback=person) as client:
+        found = await client.call_tool("check_quote", {"quote": SENTENCE})
+    assert asked == ["Which lesson is the quote from?"]
+    assert found.content[0].text == "found in L1.3"

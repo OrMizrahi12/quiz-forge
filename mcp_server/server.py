@@ -2,12 +2,14 @@
 Prompt: write-items. A host runs it over stdio (python -m mcp_server.server), so never print:
 stdout is the wire."""
 import json
+import sys
 from typing import Annotated, TypedDict
 
 from mcp.server import MCPServer
+from mcp.server.mcpserver import Elicit, Resolve
 from mcp.server.mcpserver.exceptions import ResourceNotFoundError, ToolError
 from mcp.types import ToolAnnotations
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from quizforge.config import load_config
 from quizforge.library import lesson_ids, load_lesson
@@ -62,14 +64,26 @@ def get_objectives(lesson_id: LessonId) -> list[str]:
     raise ToolError(f"unknown lesson id {lesson_id!r}: ids look like L1.3")
 
 
+class Lesson(BaseModel):
+    lesson_id: str = Field(description="The lesson the quote comes from, e.g. L1.3")
+
+
+async def ask_lesson(lesson_id: str = "") -> Lesson | Elicit[Lesson]:
+    """No lesson given? Ask the person (elicitation), not the model."""
+    if lesson_id:
+        return Lesson(lesson_id=lesson_id)
+    return Elicit("Which lesson is the quote from?", Lesson)
+
+
 @mcp.tool(title="Check a quote", annotations=READ_ONLY)
 def check_quote(
-    lesson_id: LessonId,
     quote: Annotated[str, Field(description="The full sentence the item quotes")],
+    lesson: Annotated[Lesson, Resolve(ask_lesson)],
+    lesson_id: Annotated[str, Field(description="e.g. L1.3; empty: ask the person")] = "",
 ) -> str:
     """Whether a quote appears word for word in a lesson; if not, the lesson's closest sentence."""
     try:
-        return find_quote(LIBRARY, lesson_id, quote)
+        return find_quote(LIBRARY, lesson.lesson_id, quote)
     except NotChecked as e:
         raise ToolError(str(e))
 
@@ -85,4 +99,7 @@ def write_items(lesson_id: str, count: str = "2") -> str:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    if "--http" in sys.argv:  # reached by URL: Streamable HTTP, on this machine only
+        mcp.run(transport="streamable-http", host="127.0.0.1", port=8765)
+    else:  # a host starts us and talks over stdin and stdout
+        mcp.run()
