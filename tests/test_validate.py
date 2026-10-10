@@ -8,10 +8,16 @@ from quizforge.schema import Questions
 from quizforge.validate import loads_lenient, problems
 
 LESSON = "Context: the background Claude can't know: the situation, why you need the result."
-GOOD = {"scenario": "A manager gets a generic list from Claude. What was missing?",
-        "a": "Context", "b": "Format", "c": "Audience", "d": "Task", "answer": "A",
-        "why": "Claude didn't know the situation.",
-        "quote": "Context: the background Claude can't know"}
+GOOD = {
+    "scenario": "A manager gets a generic list from Claude. What was missing?",
+    "a": "Context",
+    "b": "Format",
+    "c": "Audience",
+    "d": "Task",
+    "answer": "A",
+    "why": "Claude didn't know the situation.",
+    "quote": "Context: the background Claude can't know",
+}
 
 
 def questions(**change):
@@ -43,6 +49,7 @@ def test_a_fence_is_stripped():
 
 class Scripted:
     """A stand-in client: returns the replies it was given, in order, and counts calls."""
+
     def __init__(self, *replies):
         self.replies, self.calls, self.messages = list(replies), 0, self
 
@@ -53,8 +60,9 @@ class Scripted:
 
 def reply(stop_reason="end_turn", **change):
     text = questions(**change).model_dump_json()
-    return SimpleNamespace(stop_reason=stop_reason, content=[SimpleNamespace(text=text)],
-                           usage=SimpleNamespace(input_tokens=100))
+    return SimpleNamespace(
+        stop_reason=stop_reason, content=[SimpleNamespace(text=text)], usage=SimpleNamespace(input_tokens=100)
+    )
 
 
 def write(client):

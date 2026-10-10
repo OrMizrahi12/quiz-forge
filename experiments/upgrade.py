@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 client = anthropic.Anthropic()
 ASK = [{"role": "user", "content": "Write one quiz question about DNS. Question only."}]
-REQUESTS = {   # two Haiku 4.5 habits, then the migrated request
+REQUESTS = {  # two Haiku 4.5 habits, then the migrated request
     "temperature": dict(messages=ASK, extra_body={"temperature": 0.2}),
     "prefill": dict(messages=ASK + [{"role": "assistant", "content": "Question:"}]),
     "migrated": dict(messages=ASK),

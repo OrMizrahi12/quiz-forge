@@ -20,8 +20,7 @@ first = repaired = failed = 0
 for run in range(1, runs + 1):
     print(f"run {run}")
     try:
-        data, attempts = write_checked(client, MODEL, RULES, ASK, lesson, 2,
-                                       max_tokens=max_tokens)
+        data, attempts = write_checked(client, MODEL, RULES, ASK, lesson, 2, max_tokens=max_tokens)
     except (Refused, RepairFailed) as error:
         failed += 1
         print(f"  FAILED: {error}")

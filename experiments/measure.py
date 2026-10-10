@@ -26,9 +26,13 @@ async def one(lesson_id, run):
     lesson = clean(open(f"library/ccao-f/v1/{lesson_id}.md").read())
     ask = f'<lesson id="{lesson_id}">\n{lesson}\n</lesson>\n\nWrite 2 questions.'
     async with limit:
-        message = await client.messages.create(model=MODEL, max_tokens=2000, system=system,
-                                               messages=[{"role": "user", "content": ask}],
-                                               output_config=FORMAT)
+        message = await client.messages.create(
+            model=MODEL,
+            max_tokens=2000,
+            system=system,
+            messages=[{"role": "user", "content": ask}],
+            output_config=FORMAT,
+        )
     text = message.content[0].text
     open(f"runs/{version}-{lesson_id}-{run}.json", "w").write(text)
     try:

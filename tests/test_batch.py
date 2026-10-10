@@ -12,7 +12,9 @@ BASE = load_config()
 
 
 def settings(tmp_path):
-    return replace(BASE, usage_log=tmp_path / "usage.jsonl", output_dir=tmp_path / "items", rejected_dir=tmp_path / "rejected")
+    return replace(
+        BASE, usage_log=tmp_path / "usage.jsonl", output_dir=tmp_path / "items", rejected_dir=tmp_path / "rejected"
+    )
 
 
 def sentence(lesson_id):
@@ -20,14 +22,23 @@ def sentence(lesson_id):
 
 
 def reply_text(quote):
-    q = {"scenario": "A team ships a feature on Friday. What should they check first?",
-         "a": "The logs", "b": "The docs", "c": "The tests", "d": "The budget", "answer": "C",
-         "why": "Tests show it works.", "quote": quote}
+    q = {
+        "scenario": "A team ships a feature on Friday. What should they check first?",
+        "a": "The logs",
+        "b": "The docs",
+        "c": "The tests",
+        "d": "The budget",
+        "answer": "C",
+        "why": "Tests show it works.",
+        "quote": quote,
+    }
     return json.dumps({"questions": [q] * BASE.questions})
 
 
 def used():
-    return SimpleNamespace(input_tokens=4000, output_tokens=500, cache_creation_input_tokens=0, cache_read_input_tokens=0)
+    return SimpleNamespace(
+        input_tokens=4000, output_tokens=500, cache_creation_input_tokens=0, cache_read_input_tokens=0
+    )
 
 
 def succeeded(cid, text):
@@ -42,6 +53,7 @@ def errored(cid):
 
 class BatchFake:
     """Batch results in the order given (not the order sent); realtime replies for the repairs."""
+
     def __init__(self, results, realtime=()):
         self.given, self.realtime, self.requests = results, list(realtime), []
         self.messages, self.batches = self, self
@@ -54,8 +66,12 @@ class BatchFake:
 
     def create(self, **request):
         self.requests.append(request)
-        return SimpleNamespace(stop_reason="end_turn", content=[SimpleNamespace(text=self.realtime.pop(0))],
-                               usage=used(), _request_id="req_test")
+        return SimpleNamespace(
+            stop_reason="end_turn",
+            content=[SimpleNamespace(text=self.realtime.pop(0))],
+            usage=used(),
+            _request_id="req_test",
+        )
 
 
 def test_custom_ids_use_only_allowed_characters_and_round_trip():

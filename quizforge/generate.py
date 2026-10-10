@@ -26,13 +26,20 @@ def _now():
 
 
 def _record(cfg, prices, label, message, counted, seconds):
-    return usage.log(cfg.usage_log, time=_now(), label=label, model=cfg.model,
-                     request_id=getattr(message, "_request_id", None), counted=counted,
-                     input=message.usage.input_tokens,
-                     cache_write=message.usage.cache_creation_input_tokens or 0,
-                     cache_read=message.usage.cache_read_input_tokens or 0,
-                     output=message.usage.output_tokens, cost=usage.cost(prices, cfg.model, message.usage),
-                     seconds=round(seconds, 2))
+    return usage.log(
+        cfg.usage_log,
+        time=_now(),
+        label=label,
+        model=cfg.model,
+        request_id=getattr(message, "_request_id", None),
+        counted=counted,
+        input=message.usage.input_tokens,
+        cache_write=message.usage.cache_creation_input_tokens or 0,
+        cache_read=message.usage.cache_read_input_tokens or 0,
+        output=message.usage.output_tokens,
+        cost=usage.cost(prices, cfg.model, message.usage),
+        seconds=round(seconds, 2),
+    )
 
 
 def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
@@ -58,12 +65,24 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
 
     result = {"lesson": lesson_id, "prompt": version, "model": cfg.model}
     try:
-        data, attempts = write_checked(client, cfg.model, system, user_turn(lesson_id, lesson, cfg.questions),
-                                       lesson, cfg.questions, retries=cfg.retries, max_tokens=cfg.max_tokens,
-                                       out=lambda line: out(f"{lesson_id:5} {line.strip()}"), before=before, after=after)
+        data, attempts = write_checked(
+            client,
+            cfg.model,
+            system,
+            user_turn(lesson_id, lesson, cfg.questions),
+            lesson,
+            cfg.questions,
+            retries=cfg.retries,
+            max_tokens=cfg.max_tokens,
+            out=lambda line: out(f"{lesson_id:5} {line.strip()}"),
+            before=before,
+            after=after,
+        )
         result.update(status="passed", attempts=attempts, questions=data.model_dump()["questions"])
     except RepairFailed as error:
-        result.update(status="rejected", attempts=len(rows), problems=error.found or [str(error)], last_reply=error.text)
+        result.update(
+            status="rejected", attempts=len(rows), problems=error.found or [str(error)], last_reply=error.text
+        )
     except Refused as error:
         result.update(status="refused", attempts=len(rows), problems=[str(error)])
     except OverLimit as error:
@@ -84,8 +103,10 @@ async def generate_many(cfg, prices, lesson_ids, version=None, out=print):
         async with limit:
             out(f"{time.perf_counter() - start:6.2f} s  start  {lesson_id}")
             result = await asyncio.to_thread(generate_one, cfg, prices, lesson_id, version, client, out)
-            out(f"{time.perf_counter() - start:6.2f} s  {result['status']:6} {lesson_id}  "
-                f"{result['attempts']} attempt(s)  ${result['cost']:.5f}")
+            out(
+                f"{time.perf_counter() - start:6.2f} s  {result['status']:6} {lesson_id}  "
+                f"{result['attempts']} attempt(s)  ${result['cost']:.5f}"
+            )
             return result
 
     results = await asyncio.gather(*(one(lesson_id) for lesson_id in lesson_ids))
@@ -94,7 +115,9 @@ async def generate_many(cfg, prices, lesson_ids, version=None, out=print):
 
 def _save(cfg, result):
     """Passed items and rejected ones go to different folders; a new result replaces the lesson's old one."""
-    keep, drop = (cfg.output_dir, cfg.rejected_dir) if result["status"] == "passed" else (cfg.rejected_dir, cfg.output_dir)
+    keep, drop = (
+        (cfg.output_dir, cfg.rejected_dir) if result["status"] == "passed" else (cfg.rejected_dir, cfg.output_dir)
+    )
     keep.mkdir(parents=True, exist_ok=True)
     (drop / f"{result['lesson']}.json").unlink(missing_ok=True)
     path = keep / f"{result['lesson']}.json"

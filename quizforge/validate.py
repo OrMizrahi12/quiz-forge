@@ -9,7 +9,7 @@ def loads_lenient(text):
     start, end = text.find("{"), text.rfind("}")
     if start == -1 or end < start:
         raise ValueError("no JSON object in the reply")
-    return Questions.model_validate(json.loads(text[start:end + 1]))
+    return Questions.model_validate(json.loads(text[start : end + 1]))
 
 
 def words(text):

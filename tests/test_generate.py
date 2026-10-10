@@ -13,8 +13,13 @@ BASE = load_config()
 
 
 def settings(tmp_path, **change):
-    return replace(BASE, usage_log=tmp_path / "usage.jsonl", output_dir=tmp_path / "items",
-                   rejected_dir=tmp_path / "rejected", **change)
+    return replace(
+        BASE,
+        usage_log=tmp_path / "usage.jsonl",
+        output_dir=tmp_path / "items",
+        rejected_dir=tmp_path / "rejected",
+        **change,
+    )
 
 
 def real_sentence():
@@ -23,14 +28,22 @@ def real_sentence():
 
 
 def reply(quote):
-    q = {"scenario": "A team ships a feature on Friday. What should they check first?",
-         "a": "The logs", "b": "The docs", "c": "The tests", "d": "The budget", "answer": "C",
-         "why": "Tests show it works.", "quote": quote}
+    q = {
+        "scenario": "A team ships a feature on Friday. What should they check first?",
+        "a": "The logs",
+        "b": "The docs",
+        "c": "The tests",
+        "d": "The budget",
+        "answer": "C",
+        "why": "Tests show it works.",
+        "quote": quote,
+    }
     return json.dumps({"questions": [q] * BASE.questions})
 
 
 class Fake:
     """A stand-in client: counts tokens, returns the given replies in order, keeps every request."""
+
     def __init__(self, *texts):
         self.texts, self.requests, self.messages = list(texts), [], self
 
@@ -39,9 +52,15 @@ class Fake:
 
     def create(self, **request):
         self.requests.append(request)
-        used = SimpleNamespace(input_tokens=4000, output_tokens=500, cache_creation_input_tokens=0, cache_read_input_tokens=0)
-        return SimpleNamespace(stop_reason="end_turn", content=[SimpleNamespace(text=self.texts.pop(0))],
-                               usage=used, _request_id="req_test")
+        used = SimpleNamespace(
+            input_tokens=4000, output_tokens=500, cache_creation_input_tokens=0, cache_read_input_tokens=0
+        )
+        return SimpleNamespace(
+            stop_reason="end_turn",
+            content=[SimpleNamespace(text=self.texts.pop(0))],
+            usage=used,
+            _request_id="req_test",
+        )
 
 
 def run(tmp_path, client, **change):

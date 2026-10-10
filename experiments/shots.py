@@ -16,15 +16,17 @@ def six_word_runs(text):
     runs = set()
     for line in text.lower().splitlines():
         w = re.findall(r"[a-z0-9']+", line)
-        runs |= {" ".join(w[i:i + 6]) for i in range(len(w) - 5)}
+        runs |= {" ".join(w[i : i + 6]) for i in range(len(w) - 5)}
     return runs
 
 
 def ask(examples):
     text = ""
     if examples:
-        text = ("<examples>\nThese show the format and the kind of question we want. "
-                "Write new scenarios of your own.\n" + "\n".join(examples) + "\n</examples>\n\n")
+        text = (
+            "<examples>\nThese show the format and the kind of question we want. "
+            "Write new scenarios of your own.\n" + "\n".join(examples) + "\n</examples>\n\n"
+        )
     return text + f'<lesson id="L2.1">\n{lesson}\n</lesson>\n\nWrite 2 questions.'
 
 
@@ -36,18 +38,22 @@ for k in [int(n) for n in counts.split(",")]:
     exact = copied = tokens = 0
     answers = []
     for run in range(1, runs + 1):
-        message = client.messages.create(model=MODEL, max_tokens=1500, system=RULES,
-                                         messages=[{"role": "user", "content": ask(examples)}])
+        message = client.messages.create(
+            model=MODEL, max_tokens=1500, system=RULES, messages=[{"role": "user", "content": ask(examples)}]
+        )
         reply = message.content[0].text
         open(f"runs/shots-{k}-{run}.md", "w").write(reply)
         quotes = re.findall(r'^Quote: "(.+)"', reply, re.M)
-        ok = bool(quotes) and all(" ".join(q.replace("’", "'").split()).lower() in plain
-                                  for q in quotes)
+        ok = bool(quotes) and all(" ".join(q.replace("’", "'").split()).lower() in plain for q in quotes)
         shared = six_word_runs(reply) & seen
         exact, copied = exact + ok, copied + bool(shared)
         tokens += message.usage.input_tokens
         answers += re.findall(r"^Answer: ([A-D])", reply, re.M)
-        print(f"{k} examples, run {run}: exact quotes {'PASS' if ok else 'FAIL'}, "
-              f"copied {'YES: ' + min(shared) if shared else 'no'}")
-    print(f"== {k} examples: exact quotes {exact}/{runs}, copied {copied}/{runs}, "
-          f"input tokens {tokens // runs} per call, answers {' '.join(answers)}\n")
+        print(
+            f"{k} examples, run {run}: exact quotes {'PASS' if ok else 'FAIL'}, "
+            f"copied {'YES: ' + min(shared) if shared else 'no'}"
+        )
+    print(
+        f"== {k} examples: exact quotes {exact}/{runs}, copied {copied}/{runs}, "
+        f"input tokens {tokens // runs} per call, answers {' '.join(answers)}\n"
+    )

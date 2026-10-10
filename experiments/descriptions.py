@@ -14,16 +14,22 @@ style, runs = sys.argv[1], int(sys.argv[2])
 DESCRIBE = {
     "vague": "Reads a lesson.",
     "clear": "Returns the full notes of one lesson in the Quiz Forge library, as Markdown. The id is the letter L "
-             "and the lesson number, such as L2.3 for lesson 2.3; anything else is not found.",
+    "and the lesson number, such as L2.3 for lesson 2.3; anything else is not found.",
 }[style]
-TOOLS = [{"name": "read_lesson", "description": DESCRIBE,
-          "input_schema": {"type": "object", "properties": {"lesson_id": {"type": "string"}}, "required": ["lesson_id"]}}]
+TOOLS = [
+    {
+        "name": "read_lesson",
+        "description": DESCRIBE,
+        "input_schema": {"type": "object", "properties": {"lesson_id": {"type": "string"}}, "required": ["lesson_id"]},
+    }
+]
 ASK = "Write one practice question about lesson 3.2 of the course."
 
 right = 0
 for run in range(1, runs + 1):
-    reply = client.messages.create(model=cfg.model, max_tokens=500, tools=TOOLS,
-                                   messages=[{"role": "user", "content": ASK}])
+    reply = client.messages.create(
+        model=cfg.model, max_tokens=500, tools=TOOLS, messages=[{"role": "user", "content": ASK}]
+    )
     call = next((block for block in reply.content if block.type == "tool_use"), None)
     if call is None:
         print(f"{style}, run {run}: no tool call ({reply.stop_reason})")

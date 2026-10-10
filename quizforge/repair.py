@@ -15,13 +15,26 @@ class Refused(Exception):
 
 class RepairFailed(Exception):
     """Still wrong after the last retry: stop, and say why."""
+
     def __init__(self, reason, found=(), text=""):
         super().__init__(reason)
         self.found, self.text = list(found), text
 
 
-def write_checked(client, model, system, ask, lesson, count, retries=2, max_tokens=2000, out=print,
-                  before=lambda messages: None, after=lambda attempt, message, seconds: None, history=None):
+def write_checked(
+    client,
+    model,
+    system,
+    ask,
+    lesson,
+    count,
+    retries=2,
+    max_tokens=2000,
+    out=print,
+    before=lambda messages: None,
+    after=lambda attempt, message, seconds: None,
+    history=None,
+):
     """Ask, check in code, and send the problems back until it passes, at most `retries` times.
 
     before(messages) runs before every request (the cost check); after(attempt, message, seconds) after
@@ -33,8 +46,9 @@ def write_checked(client, model, system, ask, lesson, count, retries=2, max_toke
     for attempt in range((len(messages) + 1) // 2, retries + 2):
         before(messages)
         start = time.perf_counter()
-        message = client.messages.create(model=model, max_tokens=max_tokens, system=system,
-                                         messages=messages, output_config=FORMAT)
+        message = client.messages.create(
+            model=model, max_tokens=max_tokens, system=system, messages=messages, output_config=FORMAT
+        )
         after(attempt, message, time.perf_counter() - start)
         if message.stop_reason == "refusal":
             raise Refused(f"attempt {attempt}: Claude declined the request")

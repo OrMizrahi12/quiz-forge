@@ -1,4 +1,5 @@
 """The question writer's tools: read a lesson, check a quote, save questions (checked in code first)."""
+
 import json
 
 from quizforge import agent, sources
@@ -8,14 +9,20 @@ from quizforge.schema import Question, Questions
 from quizforge.tools import TOOLS
 from quizforge.validate import problems
 
-SAVE = {"name": "save_questions",
-        "description": "Saves the finished questions for one lesson to runs/agent/. Code checks them first: the number "
-                       "of questions, four different options, a scenario that ends in a question, and each quote word "
-                       "for word in the lesson. If a check fails, nothing is saved and the result lists the problems.",
-        "input_schema": {"type": "object",
-                         "properties": {"lesson_id": {"type": "string"},
-                                        "questions": {"type": "array", "items": Question.model_json_schema()}},
-                         "required": ["lesson_id", "questions"]}}
+SAVE = {
+    "name": "save_questions",
+    "description": "Saves the finished questions for one lesson to runs/agent/. Code checks them first: the number "
+    "of questions, four different options, a scenario that ends in a question, and each quote word "
+    "for word in the lesson. If a check fails, nothing is saved and the result lists the problems.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "lesson_id": {"type": "string"},
+            "questions": {"type": "array", "items": Question.model_json_schema()},
+        },
+        "required": ["lesson_id", "questions"],
+    },
+}
 
 
 def tools(cfg):
@@ -29,7 +36,7 @@ def save_questions(cfg, lesson_id, questions, approve):
     if found:
         raise sources.NotChecked("not saved: " + "; ".join(found) + ". Fix these and call save_questions again.")
     if not approve(data):
-        raise agent.Stop("declined")   # a person's no ends the task: it isn't Claude's to retry
+        raise agent.Stop("declined")  # a person's no ends the task: it isn't Claude's to retry
     path = cfg.output_dir.parent / "agent" / f"{lesson_id}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data.model_dump(), indent=2) + "\n")
@@ -38,6 +45,7 @@ def save_questions(cfg, lesson_id, questions, approve):
 
 def act(cfg, approve):
     """Our code runs every tool Claude asks for; a failure goes back as is_error, with what to fix."""
+
     def run(call):
         try:
             if call.name == "save_questions":
@@ -51,4 +59,5 @@ def act(cfg, approve):
             raise
         except Exception as problem:
             return str(problem), True
+
     return run

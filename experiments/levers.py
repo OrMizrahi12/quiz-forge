@@ -1,8 +1,18 @@
 from usage import call
 
 lesson = open("library/ccao-f/v1/L1.3.md").read()
-ASK = [{"role": "user", "content": "Write one multiple-choice quiz question about the lesson: four options, the answer letter, and a short explanation."}]
-SHORT = [{"role": "user", "content": "Write one multiple-choice quiz question about the lesson: four options and the answer letter only."}]
+ASK = [
+    {
+        "role": "user",
+        "content": "Write one multiple-choice quiz question about the lesson: four options, the answer letter, and a short explanation.",
+    }
+]
+SHORT = [
+    {
+        "role": "user",
+        "content": "Write one multiple-choice quiz question about the lesson: four options and the answer letter only.",
+    }
+]
 CACHED = [{"type": "text", "text": lesson, "cache_control": {"type": "ephemeral"}}]
 
 call("baseline", "claude-haiku-4-5-20251001", 1000, lesson, ASK)

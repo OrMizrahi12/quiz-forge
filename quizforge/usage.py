@@ -2,7 +2,19 @@ import json
 import tomllib
 from pathlib import Path
 
-FIELDS = ("time", "label", "model", "request_id", "counted", "input", "cache_write", "cache_read", "output", "cost", "seconds")
+FIELDS = (
+    "time",
+    "label",
+    "model",
+    "request_id",
+    "counted",
+    "input",
+    "cache_write",
+    "cache_read",
+    "output",
+    "cost",
+    "seconds",
+)
 
 
 def load_prices(path) -> dict:

@@ -11,7 +11,9 @@ CFG = load_config()
 
 
 def a_sentence(lesson_id="L1.3"):
-    return next(line.strip() for line in clean(load_lesson(CFG.library, lesson_id)).splitlines() if len(line.split()) > 10)
+    return next(
+        line.strip() for line in clean(load_lesson(CFG.library, lesson_id)).splitlines() if len(line.split()) > 10
+    )
 
 
 def call(n, **inputs):
@@ -48,7 +50,10 @@ def test_a_missing_input_is_an_error_result_too():
 
 
 def test_all_results_come_back_in_the_order_of_the_calls():
-    calls = [call(n, lesson_id="L1.3", quote=a_sentence() if n % 2 else "words that are not in the lesson at all") for n in range(6)]
+    calls = [
+        call(n, lesson_id="L1.3", quote=a_sentence() if n % 2 else "words that are not in the lesson at all")
+        for n in range(6)
+    ]
     results = run_all(CFG.library, calls)
     assert [r["tool_use_id"] for r in results] == [c.id for c in calls]
     assert all(r["type"] == "tool_result" for r in results)
@@ -63,22 +68,41 @@ def test_the_tool_is_described_and_its_lesson_id_is_an_enum():
 
 class ToolFake:
     """Turn 1: two check_quote calls in one reply. Turn 2: the verdicts."""
+
     def __init__(self, quote):
         self.quote, self.requests, self.messages = quote, [], self
 
     def create(self, **request):
         self.requests.append(request)
-        used = SimpleNamespace(input_tokens=1000, output_tokens=100, cache_creation_input_tokens=0, cache_read_input_tokens=0)
+        used = SimpleNamespace(
+            input_tokens=1000, output_tokens=100, cache_creation_input_tokens=0, cache_read_input_tokens=0
+        )
         if len(self.requests) == 1:
-            uses = [SimpleNamespace(type="tool_use", id=f"toolu_{n}", name="check_quote",
-                                    input={"lesson_id": "L1.3", "quote": self.quote}) for n in (1, 2)]
+            uses = [
+                SimpleNamespace(
+                    type="tool_use",
+                    id=f"toolu_{n}",
+                    name="check_quote",
+                    input={"lesson_id": "L1.3", "quote": self.quote},
+                )
+                for n in (1, 2)
+            ]
             return SimpleNamespace(stop_reason="tool_use", content=uses, usage=used)
         text = "Question 1: supported\nQuestion 2: not supported: the quote is about something else"
         return SimpleNamespace(stop_reason="end_turn", content=[SimpleNamespace(type="text", text=text)], usage=used)
 
 
 def test_review_returns_every_result_in_one_user_message_and_reads_the_verdicts():
-    question = {"scenario": "What?", "a": "1", "b": "2", "c": "3", "d": "4", "answer": "A", "why": "", "quote": a_sentence()}
+    question = {
+        "scenario": "What?",
+        "a": "1",
+        "b": "2",
+        "c": "3",
+        "d": "4",
+        "answer": "A",
+        "why": "",
+        "quote": a_sentence(),
+    }
     client = ToolFake(a_sentence())
     verdicts, calls, usages = review(client, CFG, "L1.3", [question, question], out=lambda line: None)
     second = client.requests[1]["messages"]

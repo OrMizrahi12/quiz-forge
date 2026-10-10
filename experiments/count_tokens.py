@@ -17,6 +17,8 @@ for model, window in WINDOWS.items():
         messages=[{"role": "user", "content": text}],
     )
     tokens = count.input_tokens
-    print(f"{model}: {tokens:,} tokens,",
-          f"{len(text) / tokens:.1f} characters each,",
-          f"{tokens / window:.1%} of the window")
+    print(
+        f"{model}: {tokens:,} tokens,",
+        f"{len(text) / tokens:.1f} characters each,",
+        f"{tokens / window:.1%} of the window",
+    )

@@ -9,7 +9,9 @@ PRICES = usage.load_prices(ROOT / "pricing.toml")
 
 
 def used(tokens_in=4000, tokens_out=500):
-    return SimpleNamespace(input_tokens=tokens_in, output_tokens=tokens_out, cache_creation_input_tokens=0, cache_read_input_tokens=0)
+    return SimpleNamespace(
+        input_tokens=tokens_in, output_tokens=tokens_out, cache_creation_input_tokens=0, cache_read_input_tokens=0
+    )
 
 
 def reply(stop, *blocks):
@@ -26,6 +28,7 @@ def use(n, name="read_lesson", **inputs):
 
 class Script:
     """A stand-in client: the replies come in the order given (the last one repeats); every request is kept."""
+
     def __init__(self, *replies):
         self.replies, self.requests, self.messages = list(replies), [], self
 
@@ -33,7 +36,7 @@ class Script:
         return SimpleNamespace(input_tokens=4000)
 
     def create(self, **request):
-        self.requests.append({**request, "messages": list(request["messages"])})   # as sent: the loop's list grows later
+        self.requests.append({**request, "messages": list(request["messages"])})  # as sent: the loop's list grows later
         return self.replies.pop(0) if len(self.replies) > 1 else self.replies[0]
 
 
@@ -62,6 +65,7 @@ def test_the_budget_is_checked_before_the_request_that_would_break_it():
 def test_a_tool_that_raises_stop_ends_the_task_and_nothing_more_is_sent():
     def act(call):
         raise agent.Stop("declined")
+
     client = Script(reply("tool_use", use(1, "save_questions")), reply("end_turn", text("unreachable")))
     result, meter = go(client, act)
     assert (result.stopped, meter.requests) == ("declined", 1)

@@ -1,4 +1,5 @@
 """The writer agent, four times: each run ends on a different stop condition."""
+
 import sys
 
 from quizforge import agent, usage, writer_tools
@@ -21,10 +22,12 @@ def person(data):
     return input("    Save these questions? [y/n] ").strip().lower() == "y"
 
 
-RUNS = [("enough room, a person approves", agent.Limits(), person),
-        ("a 2-turn limit", agent.Limits(max_turns=2), person),
-        ("a 2-cent budget", agent.Limits(max_usd=0.02), person),
-        ("a person declines", agent.Limits(), person)]
+RUNS = [
+    ("enough room, a person approves", agent.Limits(), person),
+    ("a 2-turn limit", agent.Limits(max_turns=2), person),
+    ("a 2-cent budget", agent.Limits(max_usd=0.02), person),
+    ("a person declines", agent.Limits(), person),
+]
 
 for name, limits, approve in RUNS:
     print(f"\n{name}:")

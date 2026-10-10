@@ -41,7 +41,7 @@ def test_a_version_loads_only_once_locked(tmp_path):
     lock(tmp_path, "v1")
     assert load_prompt(tmp_path, "v1") == "Rules."
     with pytest.raises(PromptChanged):
-        lock(tmp_path, "v1")   # a locked version is never locked again
+        lock(tmp_path, "v1")  # a locked version is never locked again
 
 
 def test_the_schema_replaces_the_format_section():

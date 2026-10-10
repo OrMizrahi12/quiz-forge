@@ -1,4 +1,5 @@
 """The source-checking tool: does a question's quote really come from its lesson? Claude asks, our code checks."""
+
 import re
 from concurrent.futures import ThreadPoolExecutor
 
@@ -31,17 +32,28 @@ def check_quote(library, lesson_id, quote):
 
 def tools(library):
     """One tool, described for Claude: what it does, when to use it, what each input is, what it can't do."""
-    return [{"name": "check_quote",
-             "description": "Checks whether a quote appears word for word in one lesson of the Quiz Forge library "
-                            "(case and punctuation are ignored). Returns 'found', or 'not found' with the lesson's "
-                            "closest sentence. Use it once for every question's quote before you judge the question; "
-                            "check several quotes at once when you can. It reads only the library: it can't check "
-                            "web pages or anything outside the lesson.",
-             "input_schema": {"type": "object",
-                              "properties": {"lesson_id": {"type": "string", "enum": lesson_ids(library),
-                                                           "description": "The lesson the quote should come from, e.g. L1.3"},
-                                             "quote": {"type": "string", "description": "The quote, exactly as the question gives it"}},
-                              "required": ["lesson_id", "quote"]}}]
+    return [
+        {
+            "name": "check_quote",
+            "description": "Checks whether a quote appears word for word in one lesson of the Quiz Forge library "
+            "(case and punctuation are ignored). Returns 'found', or 'not found' with the lesson's "
+            "closest sentence. Use it once for every question's quote before you judge the question; "
+            "check several quotes at once when you can. It reads only the library: it can't check "
+            "web pages or anything outside the lesson.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "lesson_id": {
+                        "type": "string",
+                        "enum": lesson_ids(library),
+                        "description": "The lesson the quote should come from, e.g. L1.3",
+                    },
+                    "quote": {"type": "string", "description": "The quote, exactly as the question gives it"},
+                },
+                "required": ["lesson_id", "quote"],
+            },
+        }
+    ]
 
 
 def run(library, call):
@@ -61,15 +73,20 @@ def run_all(library, calls):
         return list(pool.map(lambda call: run(library, call), calls))
 
 
-REVIEW = ("You review practice questions written from one lesson. For each question, check its quote with "
-          "check_quote, then decide whether the quote supports the answer marked correct. Reply with one line "
-          "per question, exactly: 'Question <n>: supported' or 'Question <n>: not supported: <reason>'.")
+REVIEW = (
+    "You review practice questions written from one lesson. For each question, check its quote with "
+    "check_quote, then decide whether the quote supports the answer marked correct. Reply with one line "
+    "per question, exactly: 'Question <n>: supported' or 'Question <n>: not supported: <reason>'."
+)
 
 
 def shown(lesson_id, questions):
     """What the reviewer sees: each question, the key, and its quote. Not the writer's reasons, not its conversation."""
-    return "\n\n".join(f"Question {n}: {q['scenario']}\nA) {q['a']}\nB) {q['b']}\nC) {q['c']}\nD) {q['d']}\n"
-                       f"Correct: {q['answer']}\nQuote from {lesson_id}: \"{q['quote']}\"" for n, q in enumerate(questions, 1))
+    return "\n\n".join(
+        f"Question {n}: {q['scenario']}\nA) {q['a']}\nB) {q['b']}\nC) {q['c']}\nD) {q['d']}\n"
+        f'Correct: {q["answer"]}\nQuote from {lesson_id}: "{q["quote"]}"'
+        for n, q in enumerate(questions, 1)
+    )
 
 
 def verdicts(text):
@@ -89,8 +106,9 @@ def review(client, cfg, lesson_id, questions, max_turns=4, out=print):
     """
     messages, calls, usages = [{"role": "user", "content": shown(lesson_id, questions)}], 0, []
     for turn in range(1, max_turns + 1):
-        reply = client.messages.create(model=cfg.model, max_tokens=800, system=REVIEW,
-                                       tools=tools(cfg.library), messages=messages)
+        reply = client.messages.create(
+            model=cfg.model, max_tokens=800, system=REVIEW, tools=tools(cfg.library), messages=messages
+        )
         usages.append(reply.usage)
         uses = [block for block in reply.content if block.type == "tool_use"]
         out(f"  turn {turn}: {reply.stop_reason}, {len(uses)} check_quote call(s)")

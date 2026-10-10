@@ -8,24 +8,43 @@ from quizforge.config import load_config
 from quizforge.sources import NotChecked
 
 BASE = load_config()
-OLD = ("A marketing team needs to generate 500 social media post captions per week, each 2-3 sentences long. The captions "
-       "don't require deep reasoning, and the team wants to stay within its Pro plan's usage limits. Which model tier and "
-       "effort level combination makes most sense?")
-REWORDED = ("A marketing team must write 500 short social media captions each week. The captions need no deep reasoning, "
-            "and the team wants to stay inside its Pro plan's usage limits. Which model tier and effort level fit best?")
-OTHER = ("A data analyst writes one long, carefully argued strategy memo for the board next month, and accuracy matters "
-         "more than speed. Which model tier should she start with?")
+OLD = (
+    "A marketing team needs to generate 500 social media post captions per week, each 2-3 sentences long. The captions "
+    "don't require deep reasoning, and the team wants to stay within its Pro plan's usage limits. Which model tier and "
+    "effort level combination makes most sense?"
+)
+REWORDED = (
+    "A marketing team must write 500 short social media captions each week. The captions need no deep reasoning, "
+    "and the team wants to stay inside its Pro plan's usage limits. Which model tier and effort level fit best?"
+)
+OTHER = (
+    "A data analyst writes one long, carefully argued strategy memo for the board next month, and accuracy matters "
+    "more than speed. Which model tier should she start with?"
+)
 
 
 def a_sentence(lesson_id="L1.3"):
     """A line from one of the lesson's sections, so the quote check passes and the quote has a section."""
-    return next(line.strip() for c in retrieve.chunks(BASE.library) if c["source"].startswith(lesson_id + "#")
-                for line in c["text"].splitlines() if len(line.split()) > 10)
+    return next(
+        line.strip()
+        for c in retrieve.chunks(BASE.library)
+        if c["source"].startswith(lesson_id + "#")
+        for line in c["text"].splitlines()
+        if len(line.split()) > 10
+    )
 
 
 def question(scenario):
-    return {"scenario": scenario, "a": "Haiku", "b": "Sonnet", "c": "Opus", "d": "Any of them", "answer": "A",
-            "why": "The lesson says so.", "quote": a_sentence()}
+    return {
+        "scenario": scenario,
+        "a": "Haiku",
+        "b": "Sonnet",
+        "c": "Opus",
+        "d": "Any of them",
+        "answer": "A",
+        "why": "The lesson says so.",
+        "quote": a_sentence(),
+    }
 
 
 def put(bank, folder, lesson, *scenarios):
@@ -51,7 +70,9 @@ def test_item_memory_reads_pending_and_approved_but_not_declined(tmp_path):
     put(tmp_path, "approved", "L1.3", "approved stem?")
     put(tmp_path, "declined", "L1.3", "declined stem?")
     assert memory.known_stems(tmp_path) == [("pending stem?", "pending/L1.3"), ("approved stem?", "approved/L1.3")]
-    assert memory.known_stems(tmp_path, skip=tmp_path / "pending" / "L1.3.json") == [("approved stem?", "approved/L1.3")]
+    assert memory.known_stems(tmp_path, skip=tmp_path / "pending" / "L1.3.json") == [
+        ("approved stem?", "approved/L1.3")
+    ]
 
 
 def test_a_duplicate_stem_is_flagged_with_what_to_do_instead(tmp_path):

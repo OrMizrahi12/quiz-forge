@@ -1,4 +1,5 @@
 """The last batch's results, once it has ended: matched, checked and priced."""
+
 import json
 
 from quizforge import batch, usage
@@ -10,11 +11,9 @@ last = json.loads(batch.SENT.read_text().splitlines()[-1])
 status = client.messages.batches.retrieve(last["id"])
 counts = status.request_counts
 if status.processing_status != "ended":
-    raise SystemExit(f"{status.id}: {status.processing_status}, "
-                     f"{counts.processing} processing. Come back later.")
+    raise SystemExit(f"{status.id}: {status.processing_status}, {counts.processing} processing. Come back later.")
 took = (status.ended_at - status.created_at).total_seconds()
-print(f"ended in {took:.0f} s: {counts.succeeded} succeeded, "
-      f"{counts.errored} errored")
+print(f"ended in {took:.0f} s: {counts.succeeded} succeeded, {counts.errored} errored")
 
 prices = usage.load_prices("pricing.toml")
 order, dollars = [], 0.0

@@ -11,19 +11,40 @@ def pending(tmp_path, lesson, verdicts=("Question 1: supported",)):
     cfg = replace(BASE, bank=tmp_path)
     path = tmp_path / "pending" / f"{lesson}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    q = {"scenario": f"A {lesson} situation. What now?", "a": "1", "b": "2", "c": "3", "d": "4", "answer": "B",
-         "why": "Because.", "quote": "A sentence from the lesson.", "section": f"{lesson}#the-idea"}
-    path.write_text(json.dumps({"lesson": lesson, "model": BASE.model, "prompt": "v4", "questions": [q],
-                                "verdicts": list(verdicts), "stopped": "done (checker, round 1)"}))
+    q = {
+        "scenario": f"A {lesson} situation. What now?",
+        "a": "1",
+        "b": "2",
+        "c": "3",
+        "d": "4",
+        "answer": "B",
+        "why": "Because.",
+        "quote": "A sentence from the lesson.",
+        "section": f"{lesson}#the-idea",
+    }
+    path.write_text(
+        json.dumps(
+            {
+                "lesson": lesson,
+                "model": BASE.model,
+                "prompt": "v4",
+                "questions": [q],
+                "verdicts": list(verdicts),
+                "stopped": "done (checker, round 1)",
+            }
+        )
+    )
     return cfg
 
 
 def answers(*said):
     said = list(said)
+
     def ask(prompt):
         if not said:
             raise EOFError
         return said.pop(0)
+
     return ask
 
 
@@ -86,8 +107,11 @@ def test_counts_pending_and_approved_per_lesson(tmp_path):
     quiet(cfg, answers("y"), lessons=["L1.3"])
     pending(tmp_path, "L1.3")
     pending(tmp_path, "L3.1")
-    assert review.counts(cfg) == {"L1.3": {"pending": 1, "approved": 1}, "L2.2": {"pending": 1, "approved": 0},
-                                  "L3.1": {"pending": 1, "approved": 0}}
+    assert review.counts(cfg) == {
+        "L1.3": {"pending": 1, "approved": 1},
+        "L2.2": {"pending": 1, "approved": 0},
+        "L3.1": {"pending": 1, "approved": 0},
+    }
     assert list(review.counts(cfg)) == ["L1.3", "L2.2", "L3.1"]
 
 
@@ -108,8 +132,10 @@ def test_bank_prints_a_line_per_lesson_and_a_total(tmp_path, capsys):
     quiet(pending(tmp_path, "L1.3"), answers("y"), lessons=["L1.3"])
     cli.show_bank(cfg)
     lines = capsys.readouterr().out.splitlines()
-    assert [line.split() for line in lines] == [["L1.3", "pending", "0", "approved", "1"],
-                                                ["L2.2", "pending", "1", "approved", "0"],
-                                                ["total", "pending", "1", "approved", "1"]]
+    assert [line.split() for line in lines] == [
+        ["L1.3", "pending", "0", "approved", "1"],
+        ["L2.2", "pending", "1", "approved", "0"],
+        ["total", "pending", "1", "approved", "1"],
+    ]
     cli.show_bank(replace(BASE, bank=tmp_path / "nowhere"))
     assert capsys.readouterr().out == "bank is empty\n"

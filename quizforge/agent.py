@@ -1,5 +1,6 @@
 """An agent loop with explicit stops. Claude picks the tools and their order; our code runs them, keeps count,
 and decides when the loop ends."""
+
 from dataclasses import dataclass, field
 
 from quizforge import usage
@@ -11,17 +12,17 @@ class Stop(Exception):
 
 @dataclass
 class Limits:
-    max_turns: int = 8        # requests in one task
-    max_usd: float = 0.05     # the task's budget: spent so far, plus the next request's worst case
+    max_turns: int = 8  # requests in one task
+    max_usd: float = 0.05  # the task's budget: spent so far, plus the next request's worst case
 
 
 @dataclass
 class Outcome:
-    stopped: str              # done, turn limit, budget, declined, refused, cut off
+    stopped: str  # done, turn limit, budget, declined, refused, cut off
     turns: int
     text: str = ""
     calls: list = field(default_factory=list)
-    peak: int = 0             # the largest input of any one request: how big the context got
+    peak: int = 0  # the largest input of any one request: how big the context got
 
 
 def run(meter, cfg, system, tools, act, ask, limits=Limits(), out=print, **extra):
@@ -32,9 +33,12 @@ def run(meter, cfg, system, tools, act, ask, limits=Limits(), out=print, **extra
         counted = meter.count_tokens(model=cfg.model, system=system, tools=tools, messages=messages).input_tokens
         worst = usage.worst_case(meter.prices, cfg.model, counted, cfg.max_tokens)
         if meter.cost + worst > limits.max_usd:
-            return Outcome("budget", turn - 1, f"spent ${meter.cost:.4f}; the next request could cost ${worst:.4f}", calls, peak)
-        reply = meter.messages.create(model=cfg.model, max_tokens=cfg.max_tokens, system=system,
-                                      tools=tools, messages=messages, **extra)
+            return Outcome(
+                "budget", turn - 1, f"spent ${meter.cost:.4f}; the next request could cost ${worst:.4f}", calls, peak
+            )
+        reply = meter.messages.create(
+            model=cfg.model, max_tokens=cfg.max_tokens, system=system, tools=tools, messages=messages, **extra
+        )
         peak = max(peak, reply.usage.input_tokens)
         text = "".join(block.text for block in reply.content if block.type == "text")
         uses = [block for block in reply.content if block.type == "tool_use"]

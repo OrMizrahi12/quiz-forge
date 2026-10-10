@@ -16,24 +16,34 @@ RULES = re.sub(r"<format>.*</format>", "", RULES, flags=re.S)
 lesson = open("library/ccao-f/v1/L2.1.md").read()
 ASK = f'<lesson id="L2.1">\n{lesson}\n</lesson>\n\nWrite 2 questions.'
 SCHEMA = anthropic.transform_schema(Questions)
-TOOL = {"name": "save_questions", "description": "Save the questions to the Quiz Forge bank.",
-        "strict": True, "input_schema": SCHEMA}
+TOOL = {
+    "name": "save_questions",
+    "description": "Save the questions to the Quiz Forge bank.",
+    "strict": True,
+    "input_schema": SCHEMA,
+}
 
 
 def send(mode):
     if mode == "ask":
         prompt = ASK + "\nReply with only JSON that matches this schema:\n"
         prompt += json.dumps(SCHEMA)
-        return client.messages.create(model=MODEL, max_tokens=2000, system=RULES,
-                                      messages=[{"role": "user", "content": prompt}])
+        return client.messages.create(
+            model=MODEL, max_tokens=2000, system=RULES, messages=[{"role": "user", "content": prompt}]
+        )
     if mode in ("list", "fixed"):
         shape = ListQuestions if mode == "list" else Questions
-        return client.messages.parse(model=MODEL, max_tokens=2000, system=RULES,
-                                     messages=[{"role": "user", "content": ASK}],
-                                     output_format=shape)
-    return client.messages.create(model=MODEL, max_tokens=2000, system=RULES, tools=[TOOL],
-                                  tool_choice={"type": "tool", "name": "save_questions"},
-                                  messages=[{"role": "user", "content": ASK}])
+        return client.messages.parse(
+            model=MODEL, max_tokens=2000, system=RULES, messages=[{"role": "user", "content": ASK}], output_format=shape
+        )
+    return client.messages.create(
+        model=MODEL,
+        max_tokens=2000,
+        system=RULES,
+        tools=[TOOL],
+        tool_choice={"type": "tool", "name": "save_questions"},
+        messages=[{"role": "user", "content": ASK}],
+    )
 
 
 def read(mode, message):
@@ -47,7 +57,7 @@ def read(mode, message):
 def shape(question):
     if hasattr(question, "options"):
         return len(question.options), sum(option.correct for option in question.options)
-    return 4, 1   # four required fields and one answer letter: nothing else fits the schema
+    return 4, 1  # four required fields and one answer letter: nothing else fits the schema
 
 
 runs, modes = int(sys.argv[1]), sys.argv[2].split(",")
@@ -70,5 +80,7 @@ for mode in modes:
         if bad:
             result = f"FAIL: {bad[0][0]} options, {bad[0][1]} correct"
         print(f"{mode}, run {run}: valid, {result}")
-    print(f"== {mode}: valid {valid}/{runs}, 4 options and 1 correct {rules}/{runs}, "
-          f"input tokens {tokens // runs} per call\n")
+    print(
+        f"== {mode}: valid {valid}/{runs}, 4 options and 1 correct {rules}/{runs}, "
+        f"input tokens {tokens // runs} per call\n"
+    )

@@ -7,9 +7,14 @@ from quizforge.search import search_library, section_of, tool
 CFG = load_config()
 
 
-@pytest.mark.parametrize("query, lesson", [("start with the smallest tier that can clearly do the job", "L1.3"),
-                                           ("what to check first when an answer might be a hallucination", "L3.2"),
-                                           ("when is a chain of prompts better than one prompt", "L2.2")])
+@pytest.mark.parametrize(
+    "query, lesson",
+    [
+        ("start with the smallest tier that can clearly do the job", "L1.3"),
+        ("what to check first when an answer might be a hallucination", "L3.2"),
+        ("when is a chain of prompts better than one prompt", "L2.2"),
+    ],
+)
 def test_a_known_query_finds_its_lesson_first(query, lesson):
     assert search_library(CFG.library, query)[0]["source"].startswith(lesson + "#")
 
@@ -19,7 +24,9 @@ def test_results_are_well_formed_search_result_blocks_with_citations():
     assert 1 <= len(found) <= 3
     for block in found:
         assert block["type"] == "search_result" and block["citations"] == {"enabled": True}
-        assert "#" in block["source"] and block["title"].lower().replace(" ", "-").endswith(block["source"].split("#")[1])
+        assert "#" in block["source"] and block["title"].lower().replace(" ", "-").endswith(
+            block["source"].split("#")[1]
+        )
         assert [part["type"] for part in block["content"]] == ["text"] and block["content"][0]["text"].strip()
 
 

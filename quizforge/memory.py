@@ -3,6 +3,7 @@ The memory tool's client side: Claude asks for file operations under /memories, 
 refuses any path outside it, and caps how big a file may grow (memory is read at the start of every task).
 Item memory: our own store of every stem in the bank, so a new question can't repeat an old one. The rule is known in
 advance, so code enforces it at the save; Claude doesn't have to remember it."""
+
 import json
 import shutil
 from pathlib import Path
@@ -10,7 +11,7 @@ from pathlib import Path
 from quizforge.retrieve import words
 
 TOOL = {"type": "memory_20250818", "name": "memory"}
-CAP = 1500   # characters per file: a memory that grows without limit becomes context bloat
+CAP = 1500  # characters per file: a memory that grows without limit becomes context bloat
 
 
 class Memory:
@@ -31,12 +32,18 @@ class Memory:
         p = self.path(c.get("path") or c.get("old_path"))
         if c["command"] == "view":
             if p.is_dir():
-                rows = [f"{f.stat().st_size}\t/memories/{f.relative_to(self.root)}" for f in sorted(p.rglob("*")) if f.is_file()]
+                rows = [
+                    f"{f.stat().st_size}\t/memories/{f.relative_to(self.root)}"
+                    for f in sorted(p.rglob("*"))
+                    if f.is_file()
+                ]
                 return "\n".join([f"Here're the files and directories up to 2 levels deep in {c['path']}:"] + rows)
             if not p.exists():
                 raise ValueError(f"The path {c['path']} does not exist. Please provide a valid path.")
             lines = p.read_text().splitlines()
-            return f"Here's the content of {c['path']} with line numbers:\n" + "\n".join(f"{n:6}\t{l}" for n, l in enumerate(lines, 1))
+            return f"Here's the content of {c['path']} with line numbers:\n" + "\n".join(
+                f"{n:6}\t{l}" for n, l in enumerate(lines, 1)
+            )
         if c["command"] == "create":
             return self.write(p, c["file_text"], f"File created successfully at: {c['path']}")
         if c["command"] == "str_replace":
@@ -60,8 +67,10 @@ class Memory:
 
     def write(self, p, text, ok):
         if len(text) > CAP:
-            raise ValueError(f"Not saved: memory files are capped at {CAP} characters ({len(text)} given). Keep only what a "
-                             "later task needs: shorten or replace older notes.")
+            raise ValueError(
+                f"Not saved: memory files are capped at {CAP} characters ({len(text)} given). Keep only what a "
+                "later task needs: shorten or replace older notes."
+            )
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text)
         return ok
@@ -70,7 +79,7 @@ class Memory:
         return sum(f.stat().st_size for f in self.root.rglob("*") if f.is_file())
 
 
-REMEMBERED = ("pending", "approved")   # the bank folders item memory reads; declined questions are free to try again
+REMEMBERED = ("pending", "approved")  # the bank folders item memory reads; declined questions are free to try again
 
 
 def stem_words(stem):
@@ -101,8 +110,10 @@ def repeats(stems, known, limit):
         for old, where in known + earlier:
             score = overlap(stem, old)
             if score >= limit:
-                found.append(f"question {n}: its scenario repeats one in {where} ({score:.0%} of the words shared: "
-                             f"{' '.join(old.split()[:12])} ...). Write a different situation, not a reworded one")
+                found.append(
+                    f"question {n}: its scenario repeats one in {where} ({score:.0%} of the words shared: "
+                    f"{' '.join(old.split()[:12])} ...). Write a different situation, not a reworded one"
+                )
                 break
         earlier.append((stem, f"this save (question {n})"))
     return found

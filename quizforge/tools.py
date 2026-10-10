@@ -23,8 +23,10 @@ def read_lesson(lesson_id):
 def check_source(url):
     """An external system: our code makes the request, with a host allowlist and a timeout."""
     if urlparse(url).scheme != "https" or urlparse(url).hostname not in ("support.claude.com", "platform.claude.com"):
-        raise ValueError(f"not an allowed source: {url}. Only https pages on support.claude.com or "
-                         "platform.claude.com can be checked: report it as not checked.")
+        raise ValueError(
+            f"not an allowed source: {url}. Only https pages on support.claude.com or "
+            "platform.claude.com can be checked: report it as not checked."
+        )
     request = urllib.request.Request(url, headers={"User-Agent": "quiz-forge/0.2"})
     with urllib.request.urlopen(request, timeout=10) as page:
         title = re.search(r"<title[^>]*>(.*?)</title>", page.read(200_000).decode("utf-8", "replace"), re.S)
@@ -32,14 +34,26 @@ def check_source(url):
 
 
 TOOLS = [
-    {"name": "list_lessons", "description": "Lists every lesson in the Quiz Forge library: its id and title, one per line.",
-     "input_schema": {"type": "object", "properties": {}}},
-    {"name": "read_lesson", "description": "Returns the full notes of one lesson, as Markdown, by its id from list_lessons.",
-     "input_schema": {"type": "object", "properties": {"lesson_id": {"type": "string", "enum": lesson_ids(cfg.library)}},
-                      "required": ["lesson_id"]}},
-    {"name": "check_source", "description": "Opens one https URL on support.claude.com or platform.claude.com and returns "
-                                            "its HTTP status and page title, to confirm that a cited source is live.",
-     "input_schema": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]}},
+    {
+        "name": "list_lessons",
+        "description": "Lists every lesson in the Quiz Forge library: its id and title, one per line.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "read_lesson",
+        "description": "Returns the full notes of one lesson, as Markdown, by its id from list_lessons.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"lesson_id": {"type": "string", "enum": lesson_ids(cfg.library)}},
+            "required": ["lesson_id"],
+        },
+    },
+    {
+        "name": "check_source",
+        "description": "Opens one https URL on support.claude.com or platform.claude.com and returns "
+        "its HTTP status and page title, to confirm that a cited source is live.",
+        "input_schema": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]},
+    },
 ]
 DISPATCH = {"list_lessons": list_lessons, "read_lesson": read_lesson, "check_source": check_source}
 

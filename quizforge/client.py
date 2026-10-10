@@ -4,21 +4,26 @@ from dotenv import load_dotenv
 # Claude 4.5 models and earlier accept the partial reply as the start of the assistant turn (prefill).
 # Newer models reject prefill, so they get the partial reply inside a user message instead (streaming docs).
 PREFILL_OK = ("claude-haiku-4-5", "claude-sonnet-4-5", "claude-opus-4-5")
-DROPS = (anthropic.APIConnectionError, ConnectionError)   # a connection that breaks partway through a stream
+DROPS = (anthropic.APIConnectionError, ConnectionError)  # a connection that breaks partway through a stream
 
 
 def make_client(asynchronous=False):
-    load_dotenv()   # reads ANTHROPIC_API_KEY from .env; the key is never printed
+    load_dotenv()  # reads ANTHROPIC_API_KEY from .env; the key is never printed
     return anthropic.AsyncAnthropic() if asynchronous else anthropic.Anthropic()
 
 
 def continuation(model: str, messages: list, partial: str) -> list:
     """The messages for a request that picks up a broken stream where its text stopped."""
-    partial = partial.rstrip()   # the API rejects a final assistant turn that ends in whitespace
+    partial = partial.rstrip()  # the API rejects a final assistant turn that ends in whitespace
     if model.startswith(PREFILL_OK):
         return messages + [{"role": "assistant", "content": partial}]
-    return messages + [{"role": "user", "content": "Your previous response was interrupted and ended with "
-                        f"{partial}. Continue from where you left off."}]
+    return messages + [
+        {
+            "role": "user",
+            "content": "Your previous response was interrupted and ended with "
+            f"{partial}. Continue from where you left off.",
+        }
+    ]
 
 
 def stream_reply(client, *, model, system, messages, max_tokens, on_text=lambda text: None, max_resumes=2):

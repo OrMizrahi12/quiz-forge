@@ -47,7 +47,9 @@ def load_prompt(folder: Path, version: str) -> str:
     if version not in hashes:
         raise PromptChanged(f"{version} is not locked: measure it, then python -m quizforge prompts --lock {version}")
     if digest(text) != hashes[version]:
-        raise PromptChanged(f"{version}.md changed after it was locked: restore it, and put the change in the next version")
+        raise PromptChanged(
+            f"{version}.md changed after it was locked: restore it, and put the change in the next version"
+        )
     return text
 
 

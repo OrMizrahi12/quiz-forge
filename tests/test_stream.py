@@ -27,7 +27,9 @@ class FakeStream:
             yield chunk
 
     def get_final_message(self):
-        return SimpleNamespace(stop_reason="end_turn", usage=SimpleNamespace(input_tokens=10, output_tokens=len(self.chunks)))
+        return SimpleNamespace(
+            stop_reason="end_turn", usage=SimpleNamespace(input_tokens=10, output_tokens=len(self.chunks))
+        )
 
 
 class FakeClient:
@@ -47,12 +49,17 @@ def test_a_whole_stream_comes_back_in_one_request():
 
 
 def test_a_broken_stream_keeps_its_text_and_resumes():
-    client = FakeClient(FakeStream(["Question: What ", "does DNS ", "do? "], drop_after=2), FakeStream(["A) ...", " Answer: A"]))
+    client = FakeClient(
+        FakeStream(["Question: What ", "does DNS ", "do? "], drop_after=2), FakeStream(["A) ...", " Answer: A"])
+    )
     text, finals = stream_reply(client, model="claude-haiku-4-5-20251001", system="s", messages=ASK, max_tokens=50)
     assert text == "Question: What does DNS A) ... Answer: A"
-    assert len(finals) == 1   # only the request that finished has a final message
+    assert len(finals) == 1  # only the request that finished has a final message
     resumed = client.requests[1]["messages"]
-    assert resumed[-1] == {"role": "assistant", "content": "Question: What does DNS"}   # the partial, trailing space removed
+    assert resumed[-1] == {
+        "role": "assistant",
+        "content": "Question: What does DNS",
+    }  # the partial, trailing space removed
 
 
 def test_resuming_gives_up_after_the_limit():

@@ -28,7 +28,7 @@ def check_model(cfg):
 def measured(folder):
     """The "Measured:" line of each version in CHANGELOG.md, by version."""
     path, found, names = folder / "CHANGELOG.md", {}, []
-    for line in (path.read_text().splitlines() if path.exists() else []):
+    for line in path.read_text().splitlines() if path.exists() else []:
         if line.startswith("## "):
             names = re.findall(r"v\d+", line)
         elif line.startswith("Measured:"):
@@ -59,7 +59,7 @@ def show_items(cfg, lesson_id):
         print(f"\n{n}. {q['scenario']}")
         for key in "abcd":
             print(f"   {key.upper()}) {q[key]}")
-        print(f"   Answer: {q['answer']}. {q['why']}\n   Quote: \"{q['quote']}\"")
+        print(f'   Answer: {q["answer"]}. {q["why"]}\n   Quote: "{q["quote"]}"')
     for problem in result.get("problems", []):
         print(f"  problem: {problem}")
 
@@ -87,8 +87,10 @@ def check_items(cfg, prices, lesson_id):
 def show_evidence(cfg, prices, lesson_id):
     """The lesson's PDF (uploaded once) and the passages, with pages, that support each answer."""
     claims, used, uploaded = evidence(make_client(), cfg, lesson_id, saved(cfg, lesson_id)["questions"])
-    print(f"{lesson_id}.pdf: {'uploaded' if uploaded else 'reused by file_id'}, {used.input_tokens} input tokens, "
-          f"${usage.cost(prices, cfg.model, used):.5f}")
+    print(
+        f"{lesson_id}.pdf: {'uploaded' if uploaded else 'reused by file_id'}, {used.input_tokens} input tokens, "
+        f"${usage.cost(prices, cfg.model, used):.5f}"
+    )
     for claim in claims:
         if claim["citations"]:
             print(f"  {claim['text'][:90]}")
@@ -99,7 +101,9 @@ def show_evidence(cfg, prices, lesson_id):
 def batch_submit(cfg, lessons):
     reqs = list(batch.requests(cfg, lessons or lesson_ids(cfg.library)))
     sent = batch.submit(make_client(), reqs)
-    print(f"{sent.id}: {len(reqs)} requests ({reqs[0]['custom_id']} ... {reqs[-1]['custom_id']}), {sent.processing_status}")
+    print(
+        f"{sent.id}: {len(reqs)} requests ({reqs[0]['custom_id']} ... {reqs[-1]['custom_id']}), {sent.processing_status}"
+    )
 
 
 def batch_collect(cfg, prices, batch_id=None):
@@ -112,12 +116,16 @@ def batch_collect(cfg, prices, batch_id=None):
         print(f"{batch_id}: {status.processing_status}, {counts.processing} processing. Come back later.")
         return 2
     took = (status.ended_at - status.created_at).total_seconds()
-    print(f"{batch_id} ended in {took:.0f} s: {counts.succeeded} succeeded, {counts.errored} errored, "
-          f"{counts.expired} expired, {counts.canceled} canceled")
+    print(
+        f"{batch_id} ended in {took:.0f} s: {counts.succeeded} succeeded, {counts.errored} errored, "
+        f"{counts.expired} expired, {counts.canceled} canceled"
+    )
     results = [batch.finish(cfg, prices, client, *row) for row in batch.collect(client, cfg, batch_id)]
     print()
     for result in sorted(results, key=lambda r: r["lesson"]):
-        print(f"{result['lesson']:5} {result['status']:8} {result['via']:>5}, {result['attempts']} attempt(s), ${result['cost']:.5f}")
+        print(
+            f"{result['lesson']:5} {result['status']:8} {result['via']:>5}, {result['attempts']} attempt(s), ${result['cost']:.5f}"
+        )
     passed = sum(r["status"] == "passed" for r in results)
     print(f"{passed} of {len(results)} passed, ${sum(r['cost'] for r in results):.5f}")
     return 0 if passed == len(results) else 1
@@ -134,8 +142,10 @@ def write_lesson(cfg, prices, lesson_id):
     print(f"\nstopped: {result.stopped} ({result.who}, round {result.rounds} of {cfg.rounds})")
     if job.questions:
         backed = sum(sources.supported(line) for line in job.verdicts)
-        print(f"{len(job.questions)} question(s) in bank/pending/{job.path.name}, {backed} supported by the checker: "
-              f"waiting for review (python -m quizforge review --lesson {lesson_id})")
+        print(
+            f"{len(job.questions)} question(s) in bank/pending/{job.path.name}, {backed} supported by the checker: "
+            f"waiting for review (python -m quizforge review --lesson {lesson_id})"
+        )
     print(f"{meter.requests} request(s), {meter.tokens_in:,} input tokens, ${meter.cost:.5f}")
     return 0 if result.stopped == "done" else 1
 
@@ -164,16 +174,22 @@ def show_bank(cfg):
         return
     for lesson, n in found.items():
         print(f"{lesson:6} pending {n['pending']:3}   approved {n['approved']:3}")
-    print(f"{'total':6} pending {sum(n['pending'] for n in found.values()):3}   "
-          f"approved {sum(n['approved'] for n in found.values()):3}")
+    print(
+        f"{'total':6} pending {sum(n['pending'] for n in found.values()):3}   "
+        f"approved {sum(n['approved'] for n in found.values()):3}"
+    )
 
 
 def report(result):
-    print(f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}")
+    print(
+        f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}"
+    )
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="python -m quizforge", description="Quiz Forge: checked practice questions from lesson notes")
+    parser = argparse.ArgumentParser(
+        prog="python -m quizforge", description="Quiz Forge: checked practice questions from lesson notes"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
     gen = sub.add_parser("generate", help="write checked practice questions for one or more lessons")
     gen.add_argument("--lesson", action="append", required=True, help="a lesson id, e.g. L1.3 (repeat for several)")
@@ -192,7 +208,9 @@ def main(argv=None):
     bsend.add_argument("--lesson", action="append", help="a lesson id (repeat for several)")
     bget = bsub.add_parser("collect", help="match, check and save the results; repair failures in realtime")
     bget.add_argument("--batch", help="a batch id (default: the last one submitted)")
-    wri = sub.add_parser("write", help="the writer agent drafts, a checker subagent checks, the writer revises; into bank/pending/")
+    wri = sub.add_parser(
+        "write", help="the writer agent drafts, a checker subagent checks, the writer revises; into bank/pending/"
+    )
     wri.add_argument("--lesson", required=True)
     rev = sub.add_parser("review", help="a person approves or declines pending questions, one lesson at a time")
     rev.add_argument("--lesson", action="append", help="a lesson id (default: every lesson waiting)")
@@ -224,7 +242,7 @@ def main(argv=None):
         show_items(cfg, args.lesson)
     elif args.command == "write":
         try:
-            load_prompt(cfg.prompts, cfg.prompt)   # a changed or unlocked prompt stops here, before any call
+            load_prompt(cfg.prompts, cfg.prompt)  # a changed or unlocked prompt stops here, before any call
         except (PromptChanged, ValueError) as error:
             raise SystemExit(str(error))
         return write_lesson(cfg, prices, args.lesson)
@@ -247,7 +265,9 @@ def main(argv=None):
             return batch_collect(cfg, prices, args.batch)
     else:
         try:
-            load_prompt(cfg.prompts, args.prompt or cfg.prompt)   # a changed or unlocked prompt stops here, before any call
+            load_prompt(
+                cfg.prompts, args.prompt or cfg.prompt
+            )  # a changed or unlocked prompt stops here, before any call
         except (PromptChanged, ValueError) as error:
             raise SystemExit(str(error))
         check_model(cfg)

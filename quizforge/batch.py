@@ -3,6 +3,7 @@
 A batch has no back and forth, so a reply that fails the checks gets its repairs afterwards, through the
 realtime repair loop, starting from the batch's own reply.
 """
+
 import json
 
 from pydantic import ValidationError
@@ -17,7 +18,7 @@ from quizforge.sanitize import clean
 from quizforge.schema import Questions
 from quizforge.validate import problems
 
-SENT = ROOT / "runs" / "batches.jsonl"   # one line per batch we submitted
+SENT = ROOT / "runs" / "batches.jsonl"  # one line per batch we submitted
 
 
 def custom_id(lesson_id, version):
@@ -40,9 +41,13 @@ def requests(cfg, lesson_ids, version=None):
     for lesson_id in lesson_ids:
         lesson = clean(load_lesson(cfg.library, lesson_id))
         ask = user_turn(lesson_id, lesson, cfg.questions)
-        params = {"model": cfg.model, "max_tokens": cfg.max_tokens,
-                  "system": system, "output_config": FORMAT,
-                  "messages": [{"role": "user", "content": ask}]}
+        params = {
+            "model": cfg.model,
+            "max_tokens": cfg.max_tokens,
+            "system": system,
+            "output_config": FORMAT,
+            "messages": [{"role": "user", "content": ask}],
+        }
         yield {"custom_id": custom_id(lesson_id, version), "params": params}
 
 
@@ -89,11 +94,22 @@ def finish(cfg, prices, client, cid, outcome, found, text, used, out=print):
     """One batch result to a saved result: passed as is; a failing reply repaired in realtime, from the batch
     reply on; a request the batch couldn't run sent again in realtime, from the start."""
     lesson_id, version = lesson_of(cid), version_of(cid)
-    batch_cost = usage.cost(prices, cfg.model, used) / 2 if used else 0.0   # the batch price: half, on every token
+    batch_cost = usage.cost(prices, cfg.model, used) / 2 if used else 0.0  # the batch price: half, on every token
     if used:
-        usage.log(cfg.usage_log, time=_now(), label=f"{lesson_id} {version} batch", model=cfg.model, request_id=None,
-                  counted=None, input=used.input_tokens, cache_write=used.cache_creation_input_tokens or 0,
-                  cache_read=used.cache_read_input_tokens or 0, output=used.output_tokens, cost=round(batch_cost, 6), seconds=None)
+        usage.log(
+            cfg.usage_log,
+            time=_now(),
+            label=f"{lesson_id} {version} batch",
+            model=cfg.model,
+            request_id=None,
+            counted=None,
+            input=used.input_tokens,
+            cache_write=used.cache_creation_input_tokens or 0,
+            cache_read=used.cache_read_input_tokens or 0,
+            output=used.output_tokens,
+            cost=round(batch_cost, 6),
+            seconds=None,
+        )
     if outcome in ("expired", "canceled"):
         out(f"{lesson_id:5} {outcome} in the batch: sent again in realtime")
         result = generate_one(cfg, prices, lesson_id, version, client, out)
@@ -103,7 +119,9 @@ def finish(cfg, prices, client, cid, outcome, found, text, used, out=print):
     if outcome == "errored":
         result.update(status="errored", attempts=1, problems=found)
     elif not found:
-        result.update(status="passed", attempts=1, questions=Questions.model_validate_json(text).model_dump()["questions"])
+        result.update(
+            status="passed", attempts=1, questions=Questions.model_validate_json(text).model_dump()["questions"]
+        )
     else:
         result.update(_repair(cfg, prices, client, lesson_id, version, text, found, out))
     result["cost"] = round(batch_cost + result.pop("repair_cost", 0.0), 6)
@@ -117,7 +135,11 @@ def _repair(cfg, prices, client, lesson_id, version, text, found, out):
     lesson = clean(load_lesson(cfg.library, lesson_id))
     ask = user_turn(lesson_id, lesson, cfg.questions)
     fix = "Fix these problems, and keep everything else:\n- " + "\n- ".join(found)
-    history = [{"role": "user", "content": ask}, {"role": "assistant", "content": text}, {"role": "user", "content": fix}]
+    history = [
+        {"role": "user", "content": ask},
+        {"role": "assistant", "content": text},
+        {"role": "user", "content": fix},
+    ]
     spent, counted = [], {}
 
     def before(messages):
@@ -128,20 +150,49 @@ def _repair(cfg, prices, client, lesson_id, version, text, found, out):
     def after(attempt, message, seconds):
         cost = usage.cost(prices, cfg.model, message.usage)
         spent.append(cost)
-        usage.log(cfg.usage_log, time=_now(), label=f"{lesson_id} {version} attempt {attempt}", model=cfg.model,
-                  request_id=getattr(message, "_request_id", None), counted=counted["last"], input=message.usage.input_tokens,
-                  cache_write=message.usage.cache_creation_input_tokens or 0, cache_read=message.usage.cache_read_input_tokens or 0,
-                  output=message.usage.output_tokens, cost=cost, seconds=round(seconds, 2))
+        usage.log(
+            cfg.usage_log,
+            time=_now(),
+            label=f"{lesson_id} {version} attempt {attempt}",
+            model=cfg.model,
+            request_id=getattr(message, "_request_id", None),
+            counted=counted["last"],
+            input=message.usage.input_tokens,
+            cache_write=message.usage.cache_creation_input_tokens or 0,
+            cache_read=message.usage.cache_read_input_tokens or 0,
+            output=message.usage.output_tokens,
+            cost=cost,
+            seconds=round(seconds, 2),
+        )
 
-    out(f"{lesson_id:5} batch reply: {found[0]}{f' (+{len(found) - 1} more)' if len(found) > 1 else ''}: repairing in realtime")
+    out(
+        f"{lesson_id:5} batch reply: {found[0]}{f' (+{len(found) - 1} more)' if len(found) > 1 else ''}: repairing in realtime"
+    )
     try:
-        data, attempts = write_checked(client, cfg.model, system, ask, lesson, cfg.questions, retries=cfg.retries,
-                                       max_tokens=cfg.max_tokens, out=lambda line: out(f"{lesson_id:5} {line.strip()}"),
-                                       before=before, after=after, history=history)
+        data, attempts = write_checked(
+            client,
+            cfg.model,
+            system,
+            ask,
+            lesson,
+            cfg.questions,
+            retries=cfg.retries,
+            max_tokens=cfg.max_tokens,
+            out=lambda line: out(f"{lesson_id:5} {line.strip()}"),
+            before=before,
+            after=after,
+            history=history,
+        )
         done = dict(status="passed", attempts=attempts, questions=data.model_dump()["questions"])
     except RepairFailed as error:
-        done = dict(status="rejected", attempts=1 + len(spent), problems=error.found or [str(error)], last_reply=error.text)
+        done = dict(
+            status="rejected", attempts=1 + len(spent), problems=error.found or [str(error)], last_reply=error.text
+        )
     except (Refused, OverLimit) as error:
-        done = dict(status="refused" if isinstance(error, Refused) else "over limit", attempts=1 + len(spent), problems=[str(error)])
+        done = dict(
+            status="refused" if isinstance(error, Refused) else "over limit",
+            attempts=1 + len(spent),
+            problems=[str(error)],
+        )
     done["repair_cost"] = sum(spent)
     return done

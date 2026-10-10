@@ -37,20 +37,24 @@ def check_source(url: str) -> str:
     """
     try:
         return tools.check_source(url)
-    except Exception as problem:   # a ToolError goes back with is_error, without a traceback
+    except Exception as problem:  # a ToolError goes back with is_error, without a traceback
         raise ToolError(f"{type(problem).__name__}: {problem}")
 
 
 print("read_lesson, as the decorator wrote it:", read_lesson.to_dict()["input_schema"])
 ASK = "Check every source that lesson L3.2 cites, and give me a short report."
-runner = client.beta.messages.tool_runner(model=cfg.model, max_tokens=1500, max_iterations=8,
-                                          tools=[list_lessons, read_lesson, check_source],
-                                          messages=[{"role": "user", "content": ASK}])
+runner = client.beta.messages.tool_runner(
+    model=cfg.model,
+    max_tokens=1500,
+    max_iterations=8,
+    tools=[list_lessons, read_lesson, check_source],
+    messages=[{"role": "user", "content": ASK}],
+)
 for turn, reply in enumerate(runner, 1):
     calls = [block for block in reply.content if block.type == "tool_use"]
     print(f"request {turn}: {reply.stop_reason}, {len(calls)} tool calls")
     started = time.perf_counter()
-    results = runner.generate_tool_call_response()   # the runner runs them here, and reuses them
+    results = runner.generate_tool_call_response()  # the runner runs them here, and reuses them
     if results:
         print(f"  {len(results['content'])} results, {time.perf_counter() - started:.1f} s")
 report = next((block.text for block in reply.content if block.type == "text"), "")

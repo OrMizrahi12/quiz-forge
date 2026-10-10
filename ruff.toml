@@ -1,0 +1,2 @@
+# ruff: the formatter the hooks run on every Python file Claude edits
+line-length = 120
