@@ -3,7 +3,10 @@
     "defaultMode": "default",
     "allow": [
       "Bash(.venv/bin/python -m pytest *)",
-      "Bash(.venv/bin/python -m quizforge bank*)"
+      "Bash(.venv/bin/python -m quizforge bank*)",
+      "mcp__quiz-library__search_lessons",
+      "mcp__quiz-library__get_objectives",
+      "mcp__quiz-library__check_quote"
     ],
     "deny": [
       "Read(./.env)",
