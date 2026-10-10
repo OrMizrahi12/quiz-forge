@@ -1,0 +1,19 @@
+{
+  "lesson": "L2.1",
+  "model": "claude-sonnet-5-5",
+  "prompt": "write-exam-item",
+  "questions": [
+    {
+      "scenario": "An HR coordinator asks Claude to \"summarize this benefits policy\" for the new hires starting Monday. The reply is accurate but full of plan codes and legal wording that new hires won't follow. What is the most appropriate next step?",
+      "a": "Switch to a more capable model, since this one wrote the summary too technically.",
+      "b": "Ask Claude to rate its confidence in the summary.",
+      "c": "Rewrite the prompt to say who will read it: new hires with no benefits background, who need plain words.",
+      "d": "Add \"You are a world-class benefits expert\" at the top of the prompt.",
+      "answer": "D",
+      "why": "The weak answer came from a missing audience, and naming the readers sets the words, depth and tone.",
+      "quote": "It sets the words, the depth and the tone.",
+      "section": "L2.1#key-terms"
+    }
+  ],
+  "verdicts": []
+}

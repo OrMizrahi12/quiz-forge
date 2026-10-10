@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "item_id": { "type": "string", "description": "The pending file's lesson id, e.g. L1.3" },
+    "verdict": { "type": "string", "enum": ["pass", "fail"] },
+    "reasons": { "type": "array", "items": { "type": "string" }, "description": "One line per problem found" },
+    "rule": { "type": ["string", "null"], "description": "The rule or checklist line broken, or null" }
+  },
+  "required": ["item_id", "verdict", "reasons", "rule"],
+  "additionalProperties": false
+}

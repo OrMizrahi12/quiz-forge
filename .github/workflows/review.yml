@@ -1,0 +1,33 @@
+name: Review questions
+on:
+  pull_request:
+    paths: ["bank/pending/**", "quizforge/**", "plugin/**", "scripts/**", "reviewer/**"]
+permissions:
+  contents: read
+concurrency:
+  group: review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -q
+  review:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - run: curl -fsSL https://claude.ai/install.sh | bash
+      - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: scripts/ci_review.sh
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BASE_REF: origin/${{ github.base_ref }}
