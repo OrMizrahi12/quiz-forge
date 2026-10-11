@@ -38,7 +38,7 @@ def judge(meter, library, item, version=None):
     shown = (f"<item>\n{q['scenario']}\n{options}\nKey: {q['answer']}\nQuote: {q['quote']}\n</item>\n\n"
              f"<lesson_section>\n{section(library, item['lesson'], q['quote'])}\n</lesson_section>")
     reply = meter.messages.create(
-        model=meter.model, max_tokens=1000, output_config=FORMAT,  # room for thinking: it counts toward max_tokens
+        model=meter.model, max_tokens=4000, output_config=FORMAT,  # room for thinking: it counts toward max_tokens
         system=load_prompt(ROOT / "prompts/judge", version or SETTINGS["prompt"]),
         messages=[{"role": "user", "content": shown}],
     )
