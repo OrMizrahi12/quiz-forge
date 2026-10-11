@@ -3,6 +3,7 @@ import asyncio
 import json
 import re
 import sys
+from dataclasses import replace
 
 import anyio
 
@@ -223,6 +224,7 @@ def main(argv=None):
     show.add_argument("--lesson", required=True)
     prompts = sub.add_parser("prompts", help="list the prompt versions; --lock freezes one after you measure it")
     prompts.add_argument("--lock", metavar="VERSION")
+    prompts.add_argument("--folder", help="another prompt folder, e.g. prompts/judge")
     chk = sub.add_parser("check", help="Claude checks a lesson's saved questions with the check_quote tool")
     chk.add_argument("--lesson", required=True)
     evi = sub.add_parser("evidence", help="the passages, with pages, that support each saved answer (PDF, citations)")
@@ -259,6 +261,8 @@ def main(argv=None):
         for lesson, spent in sorted(s["by_lesson"].items()):
             print(f"  {lesson:6} ${spent:.5f}")
     elif args.command == "prompts":
+        if args.folder:
+            cfg = replace(cfg, prompts=ROOT / args.folder, prompt="")
         if args.lock:
             try:
                 print(f"locked {args.lock} {lock(cfg.prompts, args.lock)[:12]}")

@@ -21,7 +21,16 @@ def grade(item, library):
     return [
         ("schema", True, ""),
         ("rules", not found, "; ".join(found)),
+        ("key_length", *key_length(question)),
     ]
+
+
+def key_length(question):
+    """A key much longer than every other option gives the answer away: a form check, so code does it."""
+    key = question.answer.lower()
+    longest = max(len(getattr(question, other)) for other in "abcd" if other != key)
+    size = len(getattr(question, key))
+    return size <= 1.3 * longest, f"key {size} chars, longest other option {longest}"
 
 
 def load(name="golden.jsonl"):

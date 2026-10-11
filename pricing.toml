@@ -13,3 +13,9 @@ input = 0.10
 output = 0.50
 cache_write = 1.25
 cache_read = 0.10
+
+[models."claude-sonnet-5-5"]
+input = 2.00
+output = 10.00
+cache_write = 1.25
+cache_read = 0.05    # cache hits on Sonnet 5.5 cost 5% of the input price

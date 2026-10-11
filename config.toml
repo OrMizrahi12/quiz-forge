@@ -47,3 +47,7 @@ timeout = 120
 [retry.check]           # a person is waiting for the answer
 max_retries = 1
 timeout = 20
+
+[judge]
+model = "claude-sonnet-5-5"           # the LLM judge: Haiku 4.5 stayed under the line on dev
+prompt = "v2"                          # a locked rubric in prompts/judge/
