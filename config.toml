@@ -64,3 +64,15 @@ p95_seconds = 20
 model = "claude-haiku-5-5"
 effort = "low"
 max_tokens = 4000       # room for thinking: it counts toward max_tokens
+
+[eval]                  # the gate reads these; they mirror evals/criteria.md, and a test keeps the two equal
+completion = 0.9        # share of lessons done within 2 repairs
+quotes = 1.0            # share of items whose quote is word for word in its lesson
+quality = 0.8           # share of items the calibrated judge calls good
+usd_per_lesson = 0.02   # per completed lesson, repairs included
+p95_seconds = 30        # per lesson
+judge_agreement = 0.9   # the judge, on the held-out labels
+judge_kappa = 0.7
+judge_false_passes = 1
+allowance = 0.25        # how far a rate may fall below the accepted baseline: one lesson of the four in regression.jsonl
+max_usd = 0.10          # the gate's spend cap per run

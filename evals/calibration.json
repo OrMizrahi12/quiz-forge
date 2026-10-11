@@ -1,0 +1,12 @@
+{
+ "model": "claude-sonnet-5-5",
+ "prompt": "v2",
+ "prompt_hash": "e91bb23722b77bc6e68046fe3b23ae167a56804949f2d15e3e4be2e7fafe7fec",
+ "split": "heldout",
+ "agreement": 0.8,
+ "kappa": 0.615,
+ "false_passes": 2,
+ "false_fails": 0,
+ "cost": 0.03441,
+ "date": "2026-10-11"
+}

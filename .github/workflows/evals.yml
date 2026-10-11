@@ -27,6 +27,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - run: python -m evals.run --cases regression.jsonl --gate --max-usd 0.10
+      - run: python -m quizforge eval --gate --max-usd 0.10   # refuses to run with a judge that is not calibrated as it is now
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

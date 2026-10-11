@@ -4,6 +4,7 @@ import json
 import re
 import sys
 from dataclasses import replace
+from datetime import date
 
 import anyio
 
@@ -205,6 +206,55 @@ def ask_library(cfg, prices, question):
     return 0 if result.stopped == "done" else 1
 
 
+def run_eval(cfg, prices, args):
+    """qf eval: --calibrate measures the judge against people's labels and records it; --gate refuses a judge that
+    isn't calibrated in its current form, then holds the regression set to the criteria and the accepted baseline."""
+    from evals import gate
+    from evals.calibrate import calibrate
+    from evals.graders import load
+    from evals.run import evaluate
+
+    limits, judge = gate.settings()
+    if args.accept:
+        gate.accept()
+        return 0
+    if args.calibrate:
+        row = calibrate(cfg, args.split)
+        if args.split != "heldout":
+            print("dev is for tuning: only a heldout calibration is recorded for the gate")
+            return 0
+        found = gate.record(
+            judge, args.split, row["agreement"], row["kappa"], row["false_passes"], row["false_fails"], row["cost"]
+        )
+        gate.CALIBRATION.write_text(json.dumps(found, indent=1) + "\n")
+        ok = gate.trusted(found, limits)
+        print(
+            f"wrote evals/calibration.json: the judge {'meets' if ok else 'misses'} its line (agreement "
+            f"{limits['judge_agreement']:.0%}, kappa {limits['judge_kappa']}, false passes {limits['judge_false_passes']})"
+        )
+        return 0 if ok else 1
+    calibration = gate.load(gate.CALIBRATION)
+    reason = gate.stale(calibration, judge)
+    if reason:
+        print(f"gate: refused before any request: {reason}")
+        return 1
+    trusted = gate.trusted(calibration, limits)
+    if not trusted:
+        print("the judge missed its line on heldout: quality is reported, not gated\n")
+    totals = evaluate(cfg, prices, load("regression.jsonl"), args.max_usd or limits["max_usd"])
+    rows = gate.checks(totals, limits, trusted) + gate.drops(
+        totals, gate.load(gate.BASELINE), limits["allowance"], trusted
+    )
+    gate.publish(rows)
+    passed = not gate.failed(rows)
+    gate.LAST_RUN.parent.mkdir(exist_ok=True)
+    gate.LAST_RUN.write_text(
+        json.dumps({"date": date.today().isoformat(), "passed": passed, "totals": totals}, indent=1)
+    )
+    print(f"gate: {'pass' if passed else 'fail'}, ${totals['spent']:.4f} spent")
+    return 0 if passed else 1
+
+
 def report(result):
     print(
         f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}"
@@ -246,6 +296,22 @@ def main(argv=None):
     asks.add_argument("question")
     sub.add_parser("model", help="check the pinned model against the Models API")
     sub.add_parser("cost", help="total spend from the usage log")
+    evl = sub.add_parser(
+        "eval", help="--calibrate proves the judge; --gate holds generate to the criteria and baseline"
+    )
+    mode = evl.add_mutually_exclusive_group(required=True)
+    mode.add_argument(
+        "--calibrate", action="store_true", help="the judge against the human labels, recorded for the gate"
+    )
+    mode.add_argument("--gate", action="store_true", help="the regression set against the criteria and the baseline")
+    mode.add_argument(
+        "--accept", action="store_true", help="a person, on main: the last passing gate run becomes the baseline"
+    )
+    evl.add_argument("--split", default="heldout", help="the labels to calibrate on (only heldout is recorded)")
+    evl.add_argument("--max-usd", type=float, help="the gate's spend cap (default: config.toml [eval] max_usd)")
+    rep = sub.add_parser("report", help="cost, latency and cache reads per feature, held against the budgets")
+    rep.add_argument("--since", default="1d", help="how far back: 1d, 12h, 90m")
+    rep.add_argument("--by", choices=["feature", "model"], default="feature")
     args = parser.parse_args(argv)
 
     cfg = load_config()
@@ -271,6 +337,12 @@ def main(argv=None):
         show_prompts(cfg)
     elif args.command == "show":
         show_items(cfg, args.lesson)
+    elif args.command == "eval":
+        return run_eval(cfg, prices, args)
+    elif args.command == "report":
+        from quizforge import report as budgets
+
+        return budgets.run(args.since, args.by)
     elif args.command == "write":
         try:
             load_prompt(cfg.prompts, cfg.prompt)  # a changed or unlocked prompt stops here, before any call
