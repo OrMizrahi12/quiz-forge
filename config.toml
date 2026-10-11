@@ -51,3 +51,11 @@ timeout = 20
 [judge]
 model = "claude-sonnet-5-5"           # the LLM judge: Haiku 4.5 stayed under the line on dev
 prompt = "v2"                          # a locked rubric in prompts/judge/
+
+[budget.generate]       # docs/budgets.md: per lesson, repairs included; python -m quizforge.report checks them
+usd_per_task = 0.02
+p95_seconds = 30
+
+[budget.judge]          # per verdict
+usd_per_task = 0.01
+p95_seconds = 20
