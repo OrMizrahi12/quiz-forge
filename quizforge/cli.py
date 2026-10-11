@@ -8,7 +8,7 @@ from datetime import date
 
 import anyio
 
-from quizforge import ask, batch, review, sources, tracing, usage, write
+from quizforge import ask, batch, export, review, sources, tracing, usage, write
 from quizforge.client import make_client
 from quizforge.config import ROOT, load_config
 from quizforge.evidence import evidence
@@ -190,6 +190,16 @@ def show_bank(cfg):
     )
 
 
+def export_items(cfg, fmt):
+    done = export.export_approved(cfg, fmt)
+    if not done:
+        print("no approved questions to export")
+        return 1
+    path, n = done
+    print(f"wrote {path.relative_to(cfg.bank.parent)} ({n} question(s))")
+    return 0
+
+
 def ask_library(cfg, prices, question):
     """Quiz Forge as an MCP client: Claude answers through the library server's tools, within a turn limit and a budget."""
     meter = Meter(make_client(), prices, cfg.model, log=cfg.usage_log, label="ask")
@@ -292,6 +302,8 @@ def main(argv=None):
     rev = sub.add_parser("review", help="a person approves or declines pending questions, one lesson at a time")
     rev.add_argument("--lesson", action="append", help="a lesson id (default: every lesson waiting)")
     sub.add_parser("bank", help="how many questions are pending and approved, per lesson")
+    exp = sub.add_parser("export", help="approved questions to runs/exports/ as a CSV or a Markdown review sheet")
+    exp.add_argument("--format", choices=["csv", "md"], required=True)
     asks = sub.add_parser("ask", help="ask about the library: Claude answers with the library server's tools (MCP)")
     asks.add_argument("question")
     sub.add_parser("model", help="check the pinned model against the Models API")
@@ -353,6 +365,8 @@ def main(argv=None):
         return review_pending(cfg, args.lesson)
     elif args.command == "bank":
         show_bank(cfg)
+    elif args.command == "export":
+        return export_items(cfg, args.format)
     elif args.command == "ask":
         return ask_library(cfg, prices, args.question)
     elif args.command == "check":
