@@ -39,3 +39,11 @@ max_usd = 0.30           # and its budget per review
 [ask]
 max_turns = 5            # qf ask: requests per question
 max_usd = 0.05           # and its budget per question: spent, plus the next request's worst case
+
+[retry.generate]        # a batch-like job: it can wait for the API to recover
+max_retries = 4
+timeout = 120
+
+[retry.check]           # a person is waiting for the answer
+max_retries = 1
+timeout = 20

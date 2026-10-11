@@ -3,7 +3,9 @@ import json
 import time
 from datetime import datetime, timezone
 
-from quizforge import usage
+import anthropic
+
+from quizforge import retry, usage
 from quizforge.client import make_client
 from quizforge.config import ROOT
 from quizforge.library import load_lesson
@@ -51,7 +53,7 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
     version = version or cfg.prompt
     system = for_schema(load_prompt(cfg.prompts, version))
     lesson = clean(load_lesson(cfg.library, lesson_id))
-    client = client or make_client()
+    client = client or make_client().with_options(**retry.policy("generate"))
     rows, counted = [], {}
 
     def before(messages):
@@ -84,7 +86,10 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
             status="rejected", attempts=len(rows), problems=error.found or [str(error)], last_reply=error.text
         )
     except Refused as error:
-        result.update(status="refused", attempts=len(rows), problems=[str(error)])
+        result.update(status="refused", attempts=len(rows), problems=[str(error)], decision="fallback")
+    except anthropic.APIError as error:  # the SDK's retries are spent, or retrying can't help
+        decision = retry.classify(error)
+        result.update(status="error", attempts=len(rows), problems=[str(error)], decision=decision.action)
     except OverLimit as error:
         result.update(status="over limit", attempts=len(rows), problems=[str(error)])
     result["cost"] = round(sum(row["cost"] for row in rows), 6)

@@ -207,6 +207,7 @@ def ask_library(cfg, prices, question):
 def report(result):
     print(
         f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}"
+        + (f" (next: {result['decision']})" if "decision" in result else "")
     )
 
 
