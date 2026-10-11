@@ -65,6 +65,20 @@ def test_csv_header_and_rows_across_lessons(tmp_path):
     assert set(rows[0]) == set(export.COLUMNS)  # section, verdict, model... are not exported
 
 
+@pytest.mark.parametrize("fmt", ["csv", "md"])
+def test_rows_sorted_by_lesson_then_question(tmp_path, fmt):
+    put(tmp_path, "approved", "L2.1", [question(1, scenario="Beta?"), question(2, scenario="Alpha?")])
+    put(tmp_path, "approved", "L1.3", [question(3, scenario="Zulu?"), question(4, scenario="Mike?")])
+    path, _ = export.export_approved(cfg_for(tmp_path), fmt, tmp_path / "out")
+    expected = ["Mike?", "Zulu?", "Alpha?", "Beta?"]
+    if fmt == "csv":
+        assert [r["scenario"] for r in rows_of(path)] == expected
+    else:
+        text = path.read_text(encoding="utf-8")
+        positions = [text.index(s) for s in expected]
+        assert positions == sorted(positions)
+
+
 def test_csv_survives_comma_quote_and_newline(tmp_path):
     put(tmp_path, "approved", "L1.3", [question(1, scenario=STEM, why=STEM), question(2)])
     path, n = export.export_approved(cfg_for(tmp_path), "csv", tmp_path / "out")

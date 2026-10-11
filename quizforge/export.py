@@ -8,12 +8,12 @@ COLUMNS = ("lesson", "scenario", "a", "b", "c", "d", "answer", "why", "quote")  
 
 
 def approved(cfg):
-    """Every approved question as (lesson, question), lessons in id order, questions in file order."""
+    """Every approved question as (lesson, question), sorted by lesson then question text, so exports of the same bank diff cleanly."""
     found = []
-    for path in sorted((cfg.bank / "approved").glob("*.json")):
+    for path in (cfg.bank / "approved").glob("*.json"):
         item = json.loads(path.read_text(encoding="utf-8"))
         found += [(item.get("lesson", path.stem), q) for q in item["questions"]]
-    return found
+    return sorted(found, key=lambda row: (row[0], row[1]["scenario"]))
 
 
 def to_csv(rows):
