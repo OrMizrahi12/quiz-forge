@@ -14,6 +14,7 @@ from quizforge.library import load_lesson
 from quizforge.prompts import for_schema, load_prompt
 from quizforge.repair import Refused, RepairFailed, write_checked
 from quizforge.sanitize import clean
+from quizforge.security import keys
 
 ROUTE = tomllib.loads((ROOT / "config.toml").read_text())["route"]["generate"]  # measured in L7.6
 
@@ -96,6 +97,7 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print, r
             checked=tracing.validated,
             effort=route.get("effort"),
         )
+        data = keys.place(data, seed=lesson_id)  # the answer letter is code's choice, not the model's
         result.update(status="passed", attempts=attempts, questions=data.model_dump()["questions"])
     except RepairFailed as error:
         result.update(
