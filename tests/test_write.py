@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from quizforge import retrieve, sources, usage, write
+from quizforge import guards, retrieve, sources, usage, write
 from quizforge.config import ROOT, load_config
 from quizforge.meter import Meter
 
@@ -14,6 +14,12 @@ STEMS = [
     "A support team answers 3,000 short chat messages a day and wants each reply fast and cheap. Which tier fits?",
     "An analyst prepares one board report a quarter, where a wrong number would be costly. Which tier should she pick?",
 ]
+
+
+@pytest.fixture(autouse=True)
+def no_screen(monkeypatch):
+    """The input layer calls the API: these tests keep it off. tests/test_guards.py tests it with a fake."""
+    monkeypatch.setattr(guards, "ON", {"output"})
 
 
 def settings(tmp_path, **change):

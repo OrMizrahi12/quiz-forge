@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from quizforge import agent, memory, search, sources
+from quizforge import agent, guards, memory, search, sources
 from quizforge.library import load_lesson
 from quizforge.prompts import for_schema, load_prompt
 from quizforge.sanitize import clean
@@ -65,7 +65,7 @@ def save(cfg, job, lesson_id, questions):
         raise sources.NotChecked(
             f"this job writes questions for {job.lesson} only: save them with lesson_id {job.lesson}"
         )
-    data = Questions.model_validate({"questions": questions})
+    data = guards.draft(Questions.model_validate({"questions": questions}), seed=lesson_id)  # output layer
     found = problems(data, clean(load_lesson(cfg.library, lesson_id)), cfg.questions)
     known = memory.known_stems(cfg.bank, skip=job.path)  # every stem in the bank but this job's own draft
     found += memory.repeats([q.scenario for q in data.questions], known, cfg.similar)
@@ -100,7 +100,7 @@ def writer_act(cfg, job, out):
     def run(call):
         try:
             if call.name == "search_library":
-                found = search.search_library(cfg.library, **call.input)
+                found = guards.tool_result(cfg, search.search_library(cfg.library, **call.input))  # input layer
                 out(f"    search_library {call.input.get('query')!r}: {', '.join(r['source'] for r in found)}")
                 return found, False
             if call.name == "check_quote":

@@ -76,3 +76,6 @@ judge_kappa = 0.7
 judge_false_passes = 1
 allowance = 0.25        # how far a rate may fall below the accepted baseline: one lesson of the four in regression.jsonl
 max_usd = 0.10          # the gate's spend cap per run
+
+[guards]
+on = ["input", "output"]  # quizforge/guards.py: an experiment turns a layer off; normal use keeps both on
