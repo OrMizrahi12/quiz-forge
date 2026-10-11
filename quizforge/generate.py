@@ -66,7 +66,7 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print, r
     cfg = replace(cfg, model=route["model"], max_tokens=route["max_tokens"])
     system = for_schema(load_prompt(cfg.prompts, version))
     lesson = clean(load_lesson(cfg.library, lesson_id))
-    client = client or make_client().with_options(**retry.policy("generate"), middleware=[tracing.http_span])
+    client = client or make_client("generate")
     client = tracing.Traced(client)
     rows, counted = [], {}
 
@@ -116,7 +116,7 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print, r
 async def generate_many(cfg, prices, lesson_ids, version=None, out=print):
     """Several lessons at once, at most cfg.concurrency in flight. The repair loop is a plain loop,
     so each lesson runs in a worker thread; the client is shared (it's safe across threads)."""
-    client = make_client()
+    client = make_client("generate")
     limit = asyncio.Semaphore(cfg.concurrency)
     start = time.perf_counter()
 

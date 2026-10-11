@@ -79,7 +79,7 @@ def saved(cfg, lesson_id):
 def check_items(cfg, prices, lesson_id):
     """Claude checks each saved question's quote with our check_quote tool, then judges it."""
     result = saved(cfg, lesson_id)
-    verdicts, calls, usages = sources.review(make_client(), cfg, lesson_id, result["questions"])
+    verdicts, calls, usages = sources.review(make_client("check"), cfg, lesson_id, result["questions"])
     spent = sum(usage.cost(prices, cfg.model, u) for u in usages)
     for line in verdicts:
         print(line)
