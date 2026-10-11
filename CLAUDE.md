@@ -17,7 +17,7 @@ A command-line app that writes practice exam questions from course lesson notes 
 
 - Setup: `python -m venv .venv && pip install -r requirements.txt`; the API key goes in `.env` (see `.env.example`).
 - Tests (no API calls): `pytest`; one test: `pytest tests/test_validate.py::test_name -q`.
-- CLI is `python -m quizforge <command>`: `generate --lesson L1.3` (repeatable), `batch submit|collect`, `write --lesson L1.3`, `review`, `bank`, `show`, `check`, `evidence`, `prompts [--lock vN]`, `model`, `cost`.
+- CLI is `python -m quizforge <command>`: `generate --lesson L1.3` (repeatable), `batch submit|collect`, `write --lesson L1.3`, `review`, `bank`, `show`, `check`, `evidence`, `ask "<question>"` (through the MCP server), `prompts [--lock vN]`, `model`, `cost`.
 - Reviewer: `python -m reviewer.sdk_review bank/pending/L1.3.json` (Agent SDK, costs cents); plugin check: `claude plugin validate ./plugin`.
 - `experiments/` are standalone measurement scripts for the course (run from the root, e.g. `python -m experiments.measure v4 6`); they call the live API and cost money. `ts/` is a small TypeScript port of generate.
 

@@ -35,3 +35,7 @@ similar = 0.4            # item memory: a stem whose word overlap with a known s
 [review]
 max_turns = 12           # the Agent SDK reviewer: turns per review
 max_usd = 0.30           # and its budget per review
+
+[ask]
+max_turns = 5            # qf ask: requests per question
+max_usd = 0.05           # and its budget per question: spent, plus the next request's worst case

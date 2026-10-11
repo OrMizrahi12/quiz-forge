@@ -4,12 +4,15 @@ import json
 import re
 import sys
 
-from quizforge import batch, review, sources, usage, write
+import anyio
+
+from quizforge import ask, batch, review, sources, usage, write
 from quizforge.client import make_client
 from quizforge.config import ROOT, load_config
 from quizforge.evidence import evidence
 from quizforge.generate import generate_many, generate_one
 from quizforge.library import lesson_ids
+from quizforge.library_client import connect
 from quizforge.meter import Meter
 from quizforge.prompts import PromptChanged, digest, load_prompt, lock, locked, versions
 
@@ -185,6 +188,22 @@ def show_bank(cfg):
     )
 
 
+def ask_library(cfg, prices, question):
+    """Quiz Forge as an MCP client: Claude answers through the library server's tools, within a turn limit and a budget."""
+    meter = Meter(make_client(), prices, cfg.model, log=cfg.usage_log, label="ask")
+
+    async def answer():
+        async with connect() as library:
+            return await ask.ask(meter, cfg, question, library)
+
+    result = anyio.run(answer)
+    if result.text:
+        print(f"\n{result.text}\n")
+    print(f"stopped: {result.stopped} after {result.turns} turn(s)")
+    print(f"{meter.requests} request(s), {meter.tokens_in:,} input tokens, ${meter.cost:.5f}")
+    return 0 if result.stopped == "done" else 1
+
+
 def report(result):
     print(
         f"{result['lesson']}: {result['status']} after {result['attempts']} attempt(s), ${result['cost']:.5f} -> {result['path']}"
@@ -220,6 +239,8 @@ def main(argv=None):
     rev = sub.add_parser("review", help="a person approves or declines pending questions, one lesson at a time")
     rev.add_argument("--lesson", action="append", help="a lesson id (default: every lesson waiting)")
     sub.add_parser("bank", help="how many questions are pending and approved, per lesson")
+    asks = sub.add_parser("ask", help="ask about the library: Claude answers with the library server's tools (MCP)")
+    asks.add_argument("question")
     sub.add_parser("model", help="check the pinned model against the Models API")
     sub.add_parser("cost", help="total spend from the usage log")
     args = parser.parse_args(argv)
@@ -255,6 +276,8 @@ def main(argv=None):
         return review_pending(cfg, args.lesson)
     elif args.command == "bank":
         show_bank(cfg)
+    elif args.command == "ask":
+        return ask_library(cfg, prices, args.question)
     elif args.command == "check":
         return check_items(cfg, prices, args.lesson)
     elif args.command == "evidence":

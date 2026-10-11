@@ -24,6 +24,8 @@ class Config:
     max_usd: float
     bank: Path
     similar: float
+    ask_turns: int
+    ask_usd: float
 
 
 def load_config(path=ROOT / "config.toml"):
@@ -46,4 +48,6 @@ def load_config(path=ROOT / "config.toml"):
         max_usd=data["write"]["max_usd"],
         bank=ROOT / data["bank"]["path"],
         similar=data["bank"]["similar"],
+        ask_turns=data["ask"]["max_turns"],
+        ask_usd=data["ask"]["max_usd"],
     )
