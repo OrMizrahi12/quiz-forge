@@ -33,6 +33,7 @@ def write_checked(
     out=print,
     before=lambda messages: None,
     after=lambda attempt, message, seconds: None,
+    checked=lambda attempt, found: None,
     history=None,
 ):
     """Ask, check in code, and send the problems back until it passes, at most `retries` times.
@@ -63,6 +64,7 @@ def write_checked(
         if len(found) > 1:
             shown += f" (+{len(found) - 1} more)"
         out(f"  attempt {attempt}: {message.usage.input_tokens} input tokens, {shown}")
+        checked(attempt, found)
         if not found:
             return Questions.model_validate_json(text), attempt
         fix = "Fix these problems, and keep everything else:\n- " + "\n- ".join(found)

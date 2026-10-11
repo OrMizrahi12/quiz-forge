@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 import anthropic
 
-from quizforge import retry, usage
+from quizforge import retry, tracing, usage
 from quizforge.client import make_client
 from quizforge.config import ROOT
 from quizforge.library import load_lesson
@@ -44,6 +44,7 @@ def _record(cfg, prices, label, message, counted, seconds):
     )
 
 
+@tracing.traced
 def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
     """One lesson: the locked prompt version, the cleaned lesson, a schema-checked reply, repairs with a limit.
 
@@ -53,7 +54,8 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
     version = version or cfg.prompt
     system = for_schema(load_prompt(cfg.prompts, version))
     lesson = clean(load_lesson(cfg.library, lesson_id))
-    client = client or make_client().with_options(**retry.policy("generate"))
+    client = client or make_client().with_options(**retry.policy("generate"), middleware=[tracing.http_span])
+    client = tracing.Traced(client)
     rows, counted = [], {}
 
     def before(messages):
@@ -79,6 +81,7 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
             out=lambda line: out(f"{lesson_id:5} {line.strip()}"),
             before=before,
             after=after,
+            checked=tracing.validated,
         )
         result.update(status="passed", attempts=attempts, questions=data.model_dump()["questions"])
     except RepairFailed as error:

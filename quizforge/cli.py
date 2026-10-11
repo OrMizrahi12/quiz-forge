@@ -6,7 +6,7 @@ import sys
 
 import anyio
 
-from quizforge import ask, batch, review, sources, usage, write
+from quizforge import ask, batch, review, sources, tracing, usage, write
 from quizforge.client import make_client
 from quizforge.config import ROOT, load_config
 from quizforge.evidence import evidence
@@ -299,6 +299,7 @@ def main(argv=None):
             )  # a changed or unlocked prompt stops here, before any call
         except (PromptChanged, ValueError) as error:
             raise SystemExit(str(error))
+        print(f"trace: {tracing.setup().relative_to(ROOT)}")
         check_model(cfg)
         if len(args.lesson) == 1:
             results, wall = [generate_one(cfg, prices, args.lesson[0], args.prompt)], None
