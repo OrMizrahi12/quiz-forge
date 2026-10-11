@@ -13,6 +13,7 @@ from quizforge.library import load_lesson
 from quizforge.prompts import for_schema, load_prompt
 from quizforge.sanitize import clean
 from quizforge.schema import Question, Questions
+from quizforge.security.redact import redact_obj
 from quizforge.validate import problems
 
 SAVE = {
@@ -90,7 +91,7 @@ def keep(cfg, job, **extra):
         "verdicts": job.verdicts,
         **extra,
     }
-    job.path.write_text(json.dumps(item, indent=2) + "\n")
+    job.path.write_text(json.dumps(redact_obj(item), indent=2) + "\n")
 
 
 def writer_act(cfg, job, out):

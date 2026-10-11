@@ -6,6 +6,7 @@ from quizforge import agent, sources
 from quizforge.library import load_lesson
 from quizforge.sanitize import clean
 from quizforge.schema import Question, Questions
+from quizforge.security.redact import redact_obj
 from quizforge.tools import TOOLS
 from quizforge.validate import problems
 
@@ -39,7 +40,7 @@ def save_questions(cfg, lesson_id, questions, approve):
         raise agent.Stop("declined")  # a person's no ends the task: it isn't Claude's to retry
     path = cfg.output_dir.parent / "agent" / f"{lesson_id}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data.model_dump(), indent=2) + "\n")
+    path.write_text(json.dumps(redact_obj(data.model_dump()), indent=2) + "\n")
     return f"saved {len(questions)} questions to {path.name}"
 
 

@@ -14,7 +14,7 @@ from quizforge.library import load_lesson
 from quizforge.prompts import for_schema, load_prompt
 from quizforge.repair import Refused, RepairFailed, write_checked
 from quizforge.sanitize import clean
-from quizforge.security import keys
+from quizforge.security import keys, redact
 
 ROUTE = tomllib.loads((ROOT / "config.toml").read_text())["route"]["generate"]  # measured in L7.6
 
@@ -144,5 +144,5 @@ def _save(cfg, result):
     keep.mkdir(parents=True, exist_ok=True)
     (drop / f"{result['lesson']}.json").unlink(missing_ok=True)
     path = keep / f"{result['lesson']}.json"
-    path.write_text(json.dumps(result, indent=2) + "\n")
+    path.write_text(json.dumps(redact.redact_obj(result), indent=2) + "\n")  # stored text is redacted
     return path.relative_to(ROOT) if path.is_relative_to(ROOT) else path
