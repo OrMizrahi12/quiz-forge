@@ -1,0 +1,15 @@
+# The tools each agent may call, and why. Anything not listed is denied: tests/test_policy.py fails when an agent's
+# real tools and this file disagree, so a new tool needs a line here, with its reason, before it ships.
+
+[writer] # quizforge/write.py: drafts questions into bank/pending/
+search_library = "read: lesson sections from the library, screened first (the input layer)"
+check_quote = "read: one quote, checked against one lesson"
+save_questions = "write: bank/pending/ only, after code checks the draft and places the keys"
+
+[checker] # the writer's checker subagent, in a clean context
+check_quote = "read: one quote, checked against one lesson"
+
+[reviewer] # reviewer/sdk_review.py, the Agent SDK in dontAsk mode: a tool not allowed here is denied
+Read = "read: files in the project, kept in scope by a PreToolUse hook"
+Glob = "read: file names"
+Grep = "read: file contents"
