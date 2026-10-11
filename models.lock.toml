@@ -1,0 +1,15 @@
+# Each model id config.toml uses, with its lifecycle, copied from the deprecations page:
+# platform.claude.com/docs/en/about-claude/model-deprecations (checked 2026-10-11). Re-check monthly.
+# retires_not_before: the earliest retirement date the page gives. A deprecation notice comes at least 60 days ahead.
+
+["claude-haiku-4-5-20251001"]
+status = "active"
+retires_not_before = 2026-10-15
+
+["claude-haiku-5-5"]
+status = "active"
+retires_not_before = 2027-10-07
+
+["claude-sonnet-5-5"]
+status = "active"
+retires_not_before = 2027-09-28
