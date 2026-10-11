@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 from quizforge import retry, tracing
 from quizforge import platforms
+from quizforge.config import ROOT
 
 # Claude 4.5 models and earlier accept the partial reply as the start of the assistant turn (prefill).
 # Newer models reject prefill, so they get the partial reply inside a user message instead (streaming docs).
@@ -12,7 +13,7 @@ DROPS = (anthropic.APIConnectionError, ConnectionError)  # a connection that bre
 
 def make_client(feature=None, asynchronous=False):
     """The one place client options are set: the feature's [retry.<feature>] policy, if any, and tracing."""
-    load_dotenv()  # reads ANTHROPIC_API_KEY from .env; the key is never printed
+    load_dotenv(ROOT / ".env")  # this deployment's own key (QF_HOME/.env); the key is never printed
     client = platforms.base_client(asynchronous)
     return client.with_options(**(retry.policy_or_none(feature) or {}), middleware=[tracing.http_span])
 
