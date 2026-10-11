@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 
 from quizforge import sources
+from quizforge.security import integrity
 
 
 def pending(cfg, lessons=None):
@@ -63,6 +64,8 @@ def move(cfg, path, folder):
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(kept, indent=2) + "\n")
     path.unlink()
+    if folder == "approved":
+        integrity.seal(cfg.bank / "approved")  # the bank as a person approved it
     return target
 
 
