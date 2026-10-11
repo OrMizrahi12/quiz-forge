@@ -4,6 +4,7 @@ import json
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from threading import Thread
 
 ERRORS = {400: "invalid_request_error", 401: "authentication_error", 404: "not_found_error",
@@ -14,10 +15,14 @@ REPLY = {"id": "msg_mock", "type": "message", "role": "assistant", "model": "cla
 
 
 def answer(step):
-    """'429:2' -> (429, headers, body); 'spendcap', 'refusal', 'slow:30' and plain statuses too."""
+    """'429:2' -> (429, headers, body); 'tokens', 'reply:FILE', 'spendcap', 'refusal', 'slow:30', plain statuses."""
     name, _, arg = step.partition(":")
     if name == "200":
         return 200, {}, REPLY
+    if name == "tokens":  # a count_tokens answer
+        return 200, {}, {"input_tokens": 1500}
+    if name == "reply":  # a saved reply, read from a file: what the model said once
+        return 200, {}, {**REPLY, "content": [{"type": "text", "text": Path(arg).read_text()}]}
     if name == "refusal":
         return 200, {}, {**REPLY, "content": [], "stop_reason": "refusal"}
     if name == "slow":
@@ -47,6 +52,16 @@ def serve(script, port=8787):
             self.send_response(status)
             for key, value in {**headers, "request-id": f"req_mock_{n}", "content-type": "application/json"}.items():
                 self.send_header(key, value)
+            self.send_header("content-length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_GET(self):  # the Models API: the model asked for, active
+            body = {"type": "model", "id": self.path.rsplit("/", 1)[-1], "display_name": "mock",
+                    "created_at": "2026-01-01T00:00:00Z", "lifecycle": "active", "retires_at": None}
+            data = json.dumps(body).encode()
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
             self.send_header("content-length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)

@@ -1,10 +1,11 @@
+from dataclasses import replace
 from types import SimpleNamespace
 
 from quizforge import agent, usage
 from quizforge.config import ROOT, load_config
 from quizforge.meter import Meter
 
-CFG = load_config()
+CFG = replace(load_config(), max_tokens=1500)  # pinned: the budget math below assumes it, whatever config.toml says
 PRICES = usage.load_prices(ROOT / "pricing.toml")
 
 

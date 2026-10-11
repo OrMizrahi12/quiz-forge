@@ -8,7 +8,7 @@ from quizforge import retrieve, sources, usage, write
 from quizforge.config import ROOT, load_config
 from quizforge.meter import Meter
 
-BASE = load_config()
+BASE = replace(load_config(), max_tokens=1500)  # pinned: the budget math below assumes it, whatever config.toml says
 PRICES = usage.load_prices(ROOT / "pricing.toml")
 STEMS = [
     "A support team answers 3,000 short chat messages a day and wants each reply fast and cheap. Which tier fits?",

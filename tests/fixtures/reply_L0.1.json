@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {
+      "scenario": "You are advising a colleague on whether to take the Claude Certified Associate exam. She works as a product manager at a Claude Partner Network organization and wants to verify her competency in building Claude-based workflows. What does the CCAO-F credential primarily certify?",
+      "a": "That you have completed a formal university course in AI systems",
+      "b": "That you can complete common Claude workflow tasks independently as a hands-on professional",
+      "c": "That you have passed a theoretical exam on machine learning concepts",
+      "d": "That you have managed a team of AI engineers for at least two years",
+      "answer": "B",
+      "why": "The lesson defines the minimally qualified candidate as a hands-on professional who completes common Claude workflow tasks independently, which is what the credential certifies.",
+      "quote": "It's a hands-on professional who completes common Claude workflow tasks independently."
+    },
+    {
+      "scenario": "A developer is planning to sit the CCAO-F exam and wants to allocate study time proportionally to each domain. She notes that Output Evaluation and Validation accounts for the most exam weight, but she is uncertain whether to focus equally on Troubleshooting and Optimization. How much of the weighted exam content does Troubleshooting and Optimization represent?",
+      "a": "5% of scored items",
+      "b": "10% of scored items",
+      "c": "12% of scored items",
+      "d": "15% of scored items",
+      "answer": "B",
+      "why": "The lesson explicitly lists Troubleshooting and Optimization as the lowest-weighted domain at 10% of the exam.",
+      "quote": "Troubleshooting and Optimization: 10%"
+    }
+  ]
+}

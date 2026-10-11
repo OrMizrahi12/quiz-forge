@@ -1,0 +1,28 @@
+{
+ "search_lessons": {
+  "params": [
+   "lesson_id",
+   "query"
+  ],
+  "required": [
+   "query"
+  ]
+ },
+ "get_objectives": {
+  "params": [
+   "lesson_id"
+  ],
+  "required": [
+   "lesson_id"
+  ]
+ },
+ "check_quote": {
+  "params": [
+   "lesson_id",
+   "quote"
+  ],
+  "required": [
+   "quote"
+  ]
+ }
+}
