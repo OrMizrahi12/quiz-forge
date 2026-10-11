@@ -1,6 +1,8 @@
 import asyncio
 import json
 import time
+import tomllib
+from dataclasses import replace
 from datetime import datetime, timezone
 
 import anthropic
@@ -12,6 +14,8 @@ from quizforge.library import load_lesson
 from quizforge.prompts import for_schema, load_prompt
 from quizforge.repair import Refused, RepairFailed, write_checked
 from quizforge.sanitize import clean
+
+ROUTE = tomllib.loads((ROOT / "config.toml").read_text())["route"]["generate"]  # measured in L7.6
 
 
 class OverLimit(Exception):
@@ -51,13 +55,15 @@ def _record(cfg, prices, label, message, counted, seconds):
 
 
 @tracing.traced
-def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
+def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print, route=None):
     """One lesson: the locked prompt version, the cleaned lesson, a schema-checked reply, repairs with a limit.
 
     Every attempt is cost-checked before it's sent and logged after. A lesson that passes is saved to
     output_dir; one that's refused, over the limit or still failing after the last retry goes to rejected_dir.
     """
     version = version or cfg.prompt
+    route = route or ROUTE  # model, effort and max_tokens for generate
+    cfg = replace(cfg, model=route["model"], max_tokens=route["max_tokens"])
     system = for_schema(load_prompt(cfg.prompts, version))
     lesson = clean(load_lesson(cfg.library, lesson_id))
     client = client or make_client().with_options(**retry.policy("generate"), middleware=[tracing.http_span])
@@ -88,6 +94,7 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
             before=before,
             after=after,
             checked=tracing.validated,
+            effort=route.get("effort"),
         )
         result.update(status="passed", attempts=attempts, questions=data.model_dump()["questions"])
     except RepairFailed as error:

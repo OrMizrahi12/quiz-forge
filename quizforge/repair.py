@@ -35,6 +35,7 @@ def write_checked(
     after=lambda attempt, message, seconds: None,
     checked=lambda attempt, found: None,
     history=None,
+    effort=None,
 ):
     """Ask, check in code, and send the problems back until it passes, at most `retries` times.
 
@@ -48,14 +49,15 @@ def write_checked(
         before(messages)
         start = time.perf_counter()
         message = client.messages.create(
-            model=model, max_tokens=max_tokens, system=system, messages=messages, output_config=FORMAT
+            model=model, max_tokens=max_tokens, system=system, messages=messages,
+            output_config={**FORMAT, "effort": effort} if effort else FORMAT,
         )
         after(attempt, message, time.perf_counter() - start)
         if message.stop_reason == "refusal":
             raise Refused(f"attempt {attempt}: Claude declined the request")
         if message.stop_reason == "max_tokens":
             raise RepairFailed(f"attempt {attempt}: cut off at max_tokens ({max_tokens})")
-        text = message.content[0].text
+        text = next(block.text for block in message.content if hasattr(block, "text"))  # thinking may come first
         try:
             found = problems(Questions.model_validate_json(text), lesson, count)
         except ValidationError as error:

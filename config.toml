@@ -59,3 +59,8 @@ p95_seconds = 30
 [budget.judge]          # per verdict
 usd_per_task = 0.01
 p95_seconds = 20
+
+[route.generate]        # generate's model, effort and max_tokens (other features keep [model] writer)
+model = "claude-haiku-5-5"
+effort = "low"
+max_tokens = 4000       # room for thinking: it counts toward max_tokens

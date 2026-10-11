@@ -36,3 +36,13 @@ custom tool +767, MCP 3 tools +878, web fetch +1021, Skill +44 (+440 when used).
 
 check_quote keeps two forms on purpose: one function (quizforge/sources.py) behind
 the custom tool and the MCP tool.
+
+## generate's route: Claude Haiku 5.5 at low effort (L7.6)
+Measured with experiments/route_sweep.py on 6 lessons, graded by code and by the calibrated judge.
+- Haiku 5.5, low effort, max_tokens 4000: 6 of 6 lessons, $0.0006 per completed lesson.
+- Haiku 4.5 today: 6 of 6 lessons, $0.0095 per completed lesson.
+- Items judged good: 6 of 12 on Haiku 5.5, 4 of 12 on Haiku 4.5.
+- With max_tokens 1500 Haiku 5.5 completed 5 of 6. Thinking counts toward max_tokens.
+- Sonnet 5.5 at low effort: 1 of 6. The larger lessons don't fit the $0.02 per-request cap.
+Only generate moves ([route.generate]); the other features keep [model] writer.
+The eval gate (7.4) runs on every pull request that changes the route.

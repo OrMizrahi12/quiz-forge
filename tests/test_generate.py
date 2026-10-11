@@ -64,7 +64,9 @@ class Fake:
 
 
 def run(tmp_path, client, **change):
-    return generate_one(settings(tmp_path, **change), PRICES, "L1.3", client=client, out=lambda line: None)
+    cfg = settings(tmp_path, **change)
+    route = {"model": cfg.model, "max_tokens": cfg.max_tokens}  # pinned: these tests set their own model
+    return generate_one(cfg, PRICES, "L1.3", client=client, out=lambda line: None, route=route)
 
 
 def log_rows(tmp_path):
