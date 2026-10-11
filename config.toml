@@ -12,7 +12,7 @@ folder = "prompts/item_writer"
 item_writer = "v4"     # a locked version: to change the prompt, add and lock the next version, then point here
 
 [limits]
-max_tokens = 400         # the hard cap on each reply: two questions fit in about 300 words
+max_tokens = 1500        # replies run 450 to 600 tokens: at 400 every one was cut off
 max_request_usd = 0.02   # refuse any request that could cost more than this (counted input + max_tokens)
 concurrency = 3          # lessons in flight at once when generating for several
 
