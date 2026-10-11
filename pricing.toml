@@ -6,16 +6,19 @@ checked = "2026-10-08"
 input = 1.00
 output = 5.00
 cache_write = 1.25   # 5-minute cache writes, times the input price
+cache_write_1h = 2.00  # 1-hour cache writes, times the input price
 cache_read = 0.10    # cache reads, times the input price
 
 [models."claude-haiku-5-5"]   # prompts up to 100k tokens
 input = 0.10
 output = 0.50
 cache_write = 1.25
+cache_write_1h = 2.00  # 1-hour cache writes, times the input price
 cache_read = 0.10
 
 [models."claude-sonnet-5-5"]
 input = 2.00
 output = 10.00
 cache_write = 1.25
+cache_write_1h = 2.00  # 1-hour cache writes, times the input price
 cache_read = 0.05    # cache hits on Sonnet 5.5 cost 5% of the input price

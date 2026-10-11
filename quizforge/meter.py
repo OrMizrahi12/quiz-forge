@@ -22,7 +22,9 @@ class Meter:
         reply = self.client.messages.create(**request)
         spent = usage.cost(self.prices, self.model, reply.usage)
         self.requests += 1
-        self.tokens_in += reply.usage.input_tokens
+        u = reply.usage  # all the input, cached or not (the GenAI convention, 7.2)
+        cached = (getattr(u, "cache_creation_input_tokens", 0) or 0) + (getattr(u, "cache_read_input_tokens", 0) or 0)
+        self.tokens_in += u.input_tokens + cached
         self.tokens_out += reply.usage.output_tokens
         self.cost += spent
         if self.log:

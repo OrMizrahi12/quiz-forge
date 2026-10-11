@@ -23,6 +23,12 @@ def user_turn(lesson_id: str, text: str, questions: int) -> str:
     return f'<lesson id="{lesson_id}">\n{clean(text)}\n</lesson>\n\nWrite {questions} questions.'
 
 
+def cached_turn(lesson_id: str, text: str, questions: int) -> list:
+    """The user turn as two blocks: the lesson, the same in every request and every repair (cached), then the ask."""
+    lesson, ask = user_turn(lesson_id, text, questions).rsplit("\n\n", 1)
+    return [{"type": "text", "text": lesson, "cache_control": {"type": "ephemeral"}}, {"type": "text", "text": ask}]
+
+
 def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -73,7 +79,7 @@ def generate_one(cfg, prices, lesson_id, version=None, client=None, out=print):
             client,
             cfg.model,
             system,
-            user_turn(lesson_id, lesson, cfg.questions),
+            cached_turn(lesson_id, lesson, cfg.questions),
             lesson,
             cfg.questions,
             retries=cfg.retries,

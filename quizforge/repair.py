@@ -63,7 +63,8 @@ def write_checked(
         shown = found[0] if found else "pass"
         if len(found) > 1:
             shown += f" (+{len(found) - 1} more)"
-        out(f"  attempt {attempt}: {message.usage.input_tokens} input tokens, {shown}")
+        read = getattr(message.usage, "cache_read_input_tokens", 0) or 0
+        out(f"  attempt {attempt}: {message.usage.input_tokens} input tokens + {read:,} read from the cache, {shown}")
         checked(attempt, found)
         if not found:
             return Questions.model_validate_json(text), attempt

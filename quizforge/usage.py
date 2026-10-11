@@ -22,11 +22,13 @@ def load_prices(path) -> dict:
 
 
 def cost(prices: dict, model: str, usage) -> float:
-    """Dollars for one response, from its usage: input, output, cache writes and cache reads."""
+    """Dollars for one response, from its usage: input, output, cache writes (5-minute, 1-hour) and reads."""
     p = prices[model]
     write = getattr(usage, "cache_creation_input_tokens", 0) or 0
+    hour = getattr(getattr(usage, "cache_creation", None), "ephemeral_1h_input_tokens", 0) or 0  # part of write
     read = getattr(usage, "cache_read_input_tokens", 0) or 0
-    tokens_in = usage.input_tokens + p["cache_write"] * write + p["cache_read"] * read
+    tokens_in = (usage.input_tokens + p["cache_write"] * (write - hour) + p["cache_write_1h"] * hour
+                 + p["cache_read"] * read)
     return (tokens_in * p["input"] + usage.output_tokens * p["output"]) / 1_000_000
 
 
