@@ -1,0 +1,2 @@
+[console_scripts]
+qf = quizforge.cli:main

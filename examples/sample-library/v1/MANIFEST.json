@@ -1,0 +1,40 @@
+{
+ "library": "sample-library/v1",
+ "created": "2026-10-11",
+ "note": "A sample library written for Quiz Forge's template: three short lessons on baking bread.",
+ "lessons": [
+  {
+   "lesson": "B1.1",
+   "title": "What bread is made of",
+   "module": "Bread basics",
+   "objectives": [
+    "Name the four ingredients of a basic loaf and what each one does.",
+    "Write a recipe in baker's percentages, measured by weight."
+   ],
+   "bytes": 875,
+   "sha256": "caa3de7aa9eef65b44d83be9f174868d32c59c21d24d6a9ed72aa7731e51cce0"
+  },
+  {
+   "lesson": "B1.2",
+   "title": "Kneading and gluten",
+   "module": "Bread basics",
+   "objectives": [
+    "Explain what kneading does to gluten.",
+    "Use the windowpane test, a rest or folds to judge and build strength."
+   ],
+   "bytes": 760,
+   "sha256": "9dbe0fdf8307d166f3a8dffb14780f24487111f4e10f6c735eeeca9c2c8a3528"
+  },
+  {
+   "lesson": "B1.3",
+   "title": "Proofing and baking",
+   "module": "Bread basics",
+   "objectives": [
+    "Judge when a dough is proofed with the poke test.",
+    "Bake a loaf at the right heat, with steam, and know when it is done."
+   ],
+   "bytes": 873,
+   "sha256": "1fb605cfde74e4b826cf894457853e4d5143f2ec6833c1c7ae674b1724d96673"
+  }
+ ]
+}

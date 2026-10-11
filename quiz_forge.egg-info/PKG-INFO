@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: quiz-forge
+Version: 0.9.0
+Summary: Practice exam questions from any course library, checked by code, a judge and a person
+Requires-Python: >=3.12
+Requires-Dist: anthropic==1.11.0
+Requires-Dist: anyio==4.15.1
+Requires-Dist: claude-agent-sdk==0.2.165
+Requires-Dist: mcp==2.3.0
+Requires-Dist: opentelemetry-sdk==1.45.1
+Requires-Dist: pydantic==2.13.5
+Requires-Dist: python-dotenv==1.2.4
+Provides-Extra: dev
+Requires-Dist: pytest==9.1.1; extra == "dev"
+Requires-Dist: ruff==0.17.0; extra == "dev"
