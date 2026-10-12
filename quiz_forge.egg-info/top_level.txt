@@ -1,4 +1,0 @@
-evals
-mcp_server
-quizforge
-reviewer

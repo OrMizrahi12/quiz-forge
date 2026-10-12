@@ -54,7 +54,7 @@ def test_csv_has_the_header_and_one_row_per_question(tmp_path):
     rows = read_csv(out / "approved.csv")
     assert rows[0] == list(export.CSV_COLUMNS)
     assert [r[0] for r in rows[1:]] == ["L1.1", "L1.1", "L1.3"]
-    assert [r[1] for r in rows[1:]] == ["First?", "Second?", "Third?"]
+    assert [r[export.CSV_COLUMNS.index("scenario")] for r in rows[1:]] == ["First?", "Second?", "Third?"]
 
 
 def test_rows_are_sorted_by_lesson_then_question(tmp_path):
@@ -63,7 +63,7 @@ def test_rows_are_sorted_by_lesson_then_question(tmp_path):
     out = tmp_path / "exports"
     export.run(replace(BASE, bank=tmp_path), "csv", out_dir=out)
     rows = read_csv(out / "approved.csv")[1:]
-    assert [(r[0], r[1]) for r in rows] == [
+    assert [(r[0], r[export.CSV_COLUMNS.index("scenario")]) for r in rows] == [
         ("L1.1", "Banana?"),
         ("L1.1", "Mango?"),
         ("L1.3", "Apple?"),
@@ -91,8 +91,9 @@ def test_the_columns_come_from_one_constant(tmp_path, monkeypatch):
     ]
 
 
-def test_the_default_columns_are_the_ones_in_the_issue():
-    assert export.CSV_COLUMNS == ("lesson", "scenario", "a", "b", "c", "d", "answer", "why", "quote")
+def test_the_default_columns_are_the_ones_in_the_issue_plus_the_domain():
+    # 1.0.0 added "domain" after "lesson": a breaking change for an importer that reads columns by position
+    assert export.CSV_COLUMNS == ("lesson", "domain", "scenario", "a", "b", "c", "d", "answer", "why", "quote")
 
 
 def test_csv_leaves_out_the_review_bookkeeping(tmp_path):

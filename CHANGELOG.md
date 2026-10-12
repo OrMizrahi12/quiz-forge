@@ -8,6 +8,23 @@ Quiz Forge uses semantic versions, MAJOR.MINOR.PATCH:
 
 Each release is a git tag, `v<version>`. `python -m quizforge.release` prints exactly what a release is made of.
 
+## 1.0.0 (2026-10-12)
+The first release another team can install and run against their own exam. MAJOR because the export format changed.
+- Breaking: `qf export` has a `domain` column after `lesson`, from the deployment's `blueprint.toml` (FR-7). An
+  importer that reads columns by position must be updated; one that reads them by name only gains a column.
+- New: `blueprint.toml` and `qf plan --n <items>`: items per domain from the blueprint's weights (largest
+  remainder, so the total is exactly n), then per lesson; domains the library doesn't teach are reported as a
+  coverage gap, never given items (FR-2). `qf init` writes a one-domain blueprint for a new deployment.
+- New since 0.10.0 (9.6), released here: Quiz Forge as a package (`pip install -e .`, the `qf` command), `qf init`
+  and `QF_HOME` for a deployment per team, the library server told which deployment it serves, a fleet view
+  without content, `docs/deployments.md`, a README checked by a fresh clone, `CONTRIBUTING.md`.
+- Fixed: `python -m quizforge.release` from a deployment folder (`QF_HOME`): git now runs in the checkout, not
+  in the deployment folder, which is not a git repository.
+- Removed: `quiz_forge.egg-info/`, build output that `pip install -e .` makes, from git; `.gitignore` now ignores it.
+- `scripts/fresh_clone_check.sh`: clone, install, `qf init`, the offline commands and the tests, from the README only.
+- ADR 0001 gains the security and procurement answers and a re-check date.
+- Models and prompts: unchanged since 0.10.0 (`python -m quizforge.release` lists them).
+
 ## 0.10.0 (2026-10-12)
 The writer moves to `claude-haiku-5-5` (9.5). The evidence: `evals/writer.py`, the same 4 regression lessons
 on each model, graded by code and by the same judge; the rule was written before the runs.

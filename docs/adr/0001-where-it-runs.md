@@ -26,5 +26,18 @@ Status: accepted, 2026-10 (Northwind Learning's v1.0)
 - One switch in config.toml; the factory builds the client; the tests cover every platform's class.
 - Re-check `platforms.toml` when a platform's feature list changes; latency is measured from our own region with
   `experiments/latency.py` on each candidate before a move.
-- Security and procurement: who processes the data (Anthropic, or Anthropic on AWS), where (US only), how access
-  is controlled (keys or AWS IAM) and how it is billed.
+
+## Security and procurement
+| Question | Answer | Source, read on |
+|---|---|---|
+| Who processes the data? | Anthropic (the Claude API); Anthropic on AWS infrastructure if we buy through AWS | Claude Platform on AWS, 2026-10-12 |
+| Where is inference run? | The US only: `inference_geo="us"` on every Northwind request (NFR-5) | Data residency, 2026-10-12 |
+| What do we send? | Lesson text and prompts only; no learner data (NFR-6, the data map from 8.2) | docs/requirements.md |
+| How is access controlled? | One key per deployment and workspace; CI uses workload identity (8.5) | docs/deployments.md |
+| How is it billed? | Anthropic directly; through the AWS bill on Claude Platform on AWS | Pricing, 2026-10-12 |
+| What does it cost at our volume? | Within the quarter budget (NFR-4), held by `qf report` per feature | docs/budgets.md |
+
+## Re-check
+- 2027-01-12, or sooner when a platform's "Features not supported" list changes: re-read the five platform pages,
+  update `quizforge/platforms.toml`, run `python -m quizforge.platforms`, and re-measure latency on any candidate.
+- Each month: the deprecations page against `models.lock.toml` (docs/runbook.md).

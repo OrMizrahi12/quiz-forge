@@ -11,7 +11,7 @@ from datetime import date
 
 import quizforge
 from quizforge.client import make_client
-from quizforge.config import ROOT
+from quizforge.config import CODE, ROOT
 from quizforge.prompts import locked
 
 NOTICE = 60  # days: a deprecation notice comes at least this far ahead of a retirement
@@ -43,7 +43,7 @@ def manifest(client, today=None):
     text = (ROOT / "config.toml").read_text()
     config, lock = tomllib.loads(text), tomllib.loads((ROOT / "models.lock.toml").read_text())
     commit = subprocess.run(
-        ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
+        ["git", "rev-parse", "--short", "HEAD"], cwd=CODE, capture_output=True, text=True, check=True
     )
     config_hash = hashlib.sha256(text.encode()).hexdigest()[:12]
     lines = [f"quiz-forge {quizforge.__version__} at {commit.stdout.strip()}, config.toml {config_hash}"]
