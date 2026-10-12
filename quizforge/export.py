@@ -16,12 +16,12 @@ FILES = {"csv": "approved.csv", "md": "approved.md"}
 
 
 def load_approved(folder):
-    """(lesson, question) for every approved question: files in name order, questions in file order."""
+    """(lesson, question) for every approved question, sorted by lesson then scenario so exports diff cleanly."""
     items = []
-    for path in sorted(folder.glob("*.json")):
+    for path in folder.glob("*.json"):
         data = json.loads(path.read_text())
         items += [(data.get("lesson", path.stem), q) for q in data["questions"]]
-    return items
+    return sorted(items, key=lambda item: (item[0], item[1]["scenario"]))
 
 
 def to_csv(items, path):

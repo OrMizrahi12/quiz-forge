@@ -57,6 +57,20 @@ def test_csv_has_the_header_and_one_row_per_question(tmp_path):
     assert [r[1] for r in rows[1:]] == ["First?", "Second?", "Third?"]
 
 
+def test_rows_are_sorted_by_lesson_then_question(tmp_path):
+    approve(tmp_path, "L1.3", [question("Zebra?"), question("Apple?")])
+    approve(tmp_path, "L1.1", [question("Mango?"), question("Banana?")])
+    out = tmp_path / "exports"
+    export.run(replace(BASE, bank=tmp_path), "csv", out_dir=out)
+    rows = read_csv(out / "approved.csv")[1:]
+    assert [(r[0], r[1]) for r in rows] == [
+        ("L1.1", "Banana?"),
+        ("L1.1", "Mango?"),
+        ("L1.3", "Apple?"),
+        ("L1.3", "Zebra?"),
+    ]
+
+
 def test_a_stem_with_a_comma_a_quote_and_a_newline_stays_one_cell(tmp_path):
     approve(tmp_path, "L1.3", [question(TRICKY)])
     out = tmp_path / "exports"
