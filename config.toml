@@ -79,3 +79,4 @@ max_usd = 0.10          # the gate's spend cap per run
 
 [guards]
 on = ["input", "output"]  # quizforge/guards.py: an experiment turns a layer off; normal use keeps both on
+sites = ["claude.com", "claude.ai", "anthropic.com"]  # the output layer: the only sites a question may name (and their subdomains)

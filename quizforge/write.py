@@ -5,7 +5,7 @@ Nothing here writes to bank/approved/: only review.py does, after a person's yes
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from quizforge import agent, guards, memory, search, sources
@@ -66,7 +66,8 @@ def save(cfg, job, lesson_id, questions):
             f"this job writes questions for {job.lesson} only: save them with lesson_id {job.lesson}"
         )
     data = guards.draft(Questions.model_validate({"questions": questions}), seed=lesson_id)  # output layer
-    found = problems(data, clean(load_lesson(cfg.library, lesson_id)), cfg.questions)
+    lesson = clean(load_lesson(cfg.library, lesson_id))
+    found = problems(data, lesson, cfg.questions) + guards.links(data)  # the rules, then the output layer's links
     known = memory.known_stems(cfg.bank, skip=job.path)  # every stem in the bank but this job's own draft
     found += memory.repeats([q.scenario for q in data.questions], known, cfg.similar)
     if found:
@@ -86,7 +87,7 @@ def keep(cfg, job, **extra):
         "lesson": job.lesson,
         "model": cfg.model,
         "prompt": cfg.prompt,
-        "saved": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "saved": datetime.now(UTC).isoformat(timespec="seconds"),
         "questions": job.questions,
         "verdicts": job.verdicts,
         **extra,
