@@ -7,7 +7,7 @@ person approves each one before learners see it.
 
 ```
 python3 -m venv .venv
-.venv/bin/python -m pip install -e .
+.venv/bin/python -m pip install -e ".[dev]"   # dev: pytest and ruff, for the tests
 ```
 
 ## Start a deployment for your library
