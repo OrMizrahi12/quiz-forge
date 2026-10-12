@@ -1,0 +1,4 @@
+#!/bin/sh
+# Blocks a commit whose staged changes hold a key-shaped string. Turn it on once per clone:
+#   git config core.hooksPath .githooks
+exec .venv/bin/python -m quizforge.security.secret_scan

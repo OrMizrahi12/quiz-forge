@@ -12,11 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # the whole history, for the scan
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
+      - run: python -m quizforge.security.secret_scan --history
       - run: curl -fsSL https://claude.ai/install.sh | bash
       - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: claude plugin validate ./plugin
