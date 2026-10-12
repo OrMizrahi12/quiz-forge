@@ -1,4 +1,5 @@
 """What to do about a failure. The SDK already retried the transient ones; this decides what happens next."""
+
 import tomllib
 from dataclasses import dataclass
 
@@ -16,6 +17,11 @@ class Decision:
 def policy(feature):
     """Retry settings per feature, from config.toml [retry.<feature>]: max_retries and timeout (seconds)."""
     return tomllib.loads((ROOT / "config.toml").read_text())["retry"][feature]
+
+
+def options(feature):
+    """The same settings as policy, or {} when config.toml has no [retry.<feature>]."""
+    return tomllib.loads((ROOT / "config.toml").read_text()).get("retry", {}).get(feature, {})
 
 
 def classify(failure, budget=None):
