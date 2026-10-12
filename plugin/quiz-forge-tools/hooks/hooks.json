@@ -1,7 +1,8 @@
 {
   "hooks": {
     "PreToolUse": [
-      { "matcher": "Edit|Write|Bash", "hooks": [{ "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}\"/scripts/guard_approved.py", "onFailure": "block" }] }
+      { "matcher": "Edit|Write|Bash", "hooks": [{ "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}\"/scripts/guard_approved.py", "onFailure": "block" }] },
+      { "matcher": "Bash|Write|Edit|Read", "hooks": [{ "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}\"/scripts/guard.py", "onFailure": "block" }] }
     ],
     "Stop": [
       { "hooks": [{ "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}\"/scripts/tests_on_stop.py" }] }

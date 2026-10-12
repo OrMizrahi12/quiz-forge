@@ -11,6 +11,8 @@
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
       "mcp__claude-code-docs__submit_feedback"
     ]
   },
