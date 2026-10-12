@@ -95,7 +95,10 @@ def verdicts(text):
 
 
 def supported(line):
-    return line.rstrip(". ").endswith(": supported")
+    """True when the word right after the first colon is 'supported': 'Question 1: supported' and also
+    'Question 1: supported, the quote matches'. 'Question 1: not supported: ...' starts with another word."""
+    after = line.partition(":")[2].strip().lower()
+    return re.match(r"supported\b", after) is not None
 
 
 def review(client, cfg, lesson_id, questions, max_turns=4, out=print):

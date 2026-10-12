@@ -8,6 +8,14 @@ Quiz Forge uses semantic versions, MAJOR.MINOR.PATCH:
 
 Each release is a git tag, `v<version>`. `python -m quizforge.release` prints exactly what a release is made of.
 
+## 0.10.0 (2026-10-12)
+The writer moves to `claude-haiku-5-5` (9.5). The evidence: `evals/writer.py`, the same 4 regression lessons
+on each model, graded by code and by the same judge; the rule was written before the runs.
+- `claude-haiku-4-5-20251001`: done 100%, code 88%, checker 100%, judge good 62%, $0.0509 per done lesson.
+- `claude-haiku-5-5`: done 100%, code 75%, checker 100%, judge good 62%, $0.0047 per done lesson.
+- Fixed in our code first: the checker's verdict is read from the word after the colon (the new model adds a reason); the writer has its own max_tokens, with room for thinking; every tool error carries a message (an empty one made the API refuse the request).
+- Rollback: `git revert -m 1` on this release's merge commit, then a PATCH release.
+
 ## 0.9.0 (2026-10-12)
 The first release with a version and a tag. Everything since Lab 1 shipped as 0.1.0; this entry sums it up.
 - From a business need to v1.0 on paper: requirements with acceptance tests, a capacity model from our own logs,

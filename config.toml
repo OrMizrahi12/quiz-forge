@@ -1,7 +1,7 @@
 # Quiz Forge settings. Model IDs and prompt versions live here, never inline in the code.
 
 [model]
-writer = "claude-haiku-4-5-20251001"   # pinned snapshot: the course default (Haiku 4.5)
+writer = "claude-haiku-5-5"            # write, its checker, check, ask and evidence (Haiku 5.5; upgrade evidence: evals/writer.py)
 reviewer = "claude-sonnet-5-5"         # the Agent SDK reviewer (Sonnet 5.5: Haiku 4.5 failed sound questions)
 
 [library]
@@ -27,6 +27,7 @@ rejected_dir = "runs/rejected"
 rounds = 3               # drafts per job: the first, then up to 2 revisions after the checker's verdicts
 max_turns = 10           # requests in one writer or checker run
 max_usd = 0.15           # the whole job's budget, writer and checker together: spent, plus the next request's worst case
+max_tokens = 4000        # each writer or checker reply; room for thinking, which counts toward it ([limits] max_tokens stays for batch)
 
 [bank]
 path = "bank"            # pending/ (written by write), approved/ and declined/ (written only by review)
@@ -64,6 +65,9 @@ p95_seconds = 20
 model = "claude-haiku-5-5"
 effort = "low"
 max_tokens = 4000       # room for thinking: it counts toward max_tokens
+
+[route.batch]           # batch keeps the Haiku 4.5 snapshot it was measured on: it reads reply.content[0].text and caps at [limits] max_tokens
+model = "claude-haiku-4-5-20251001"
 
 [eval]                  # the gate reads these; they mirror evals/criteria.md, and a test keeps the two equal
 completion = 0.9        # share of lessons done within 2 repairs

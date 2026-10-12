@@ -5,7 +5,8 @@ from quizforge import agent, usage
 from quizforge.config import ROOT, load_config
 from quizforge.meter import Meter
 
-CFG = replace(load_config(), max_tokens=1500)  # pinned: the budget math below assumes it, whatever config.toml says
+# pinned: the budget math below assumes these ($1/$5 per MTok, 1500 tokens), whatever config.toml says
+CFG = replace(load_config(), model="claude-haiku-4-5-20251001", max_tokens=1500)
 PRICES = usage.load_prices(ROOT / "pricing.toml")
 
 
@@ -70,6 +71,13 @@ def test_a_tool_that_raises_stop_ends_the_task_and_nothing_more_is_sent():
     client = Script(reply("tool_use", use(1, "save_questions")), reply("end_turn", text("unreachable")))
     result, meter = go(client, act)
     assert (result.stopped, meter.requests) == ("declined", 1)
+
+
+def test_a_tool_error_with_no_message_still_goes_back_with_one():
+    client = Script(reply("tool_use", use(1, "save_questions")), reply("end_turn", text("done")))
+    go(client, act=lambda call: ("", True))
+    result = client.requests[1]["messages"][2]["content"][0]
+    assert result["is_error"] is True and "save_questions failed" in result["content"]
 
 
 def test_a_reply_cut_off_at_max_tokens_stops_the_task():

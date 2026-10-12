@@ -3,6 +3,7 @@ import asyncio
 import json
 import re
 import sys
+import tomllib
 from dataclasses import replace
 from datetime import date
 
@@ -86,7 +87,7 @@ def check_items(cfg, prices, lesson_id):
     print(f"{calls} check_quote call(s), {len(usages)} request(s), ${spent:.5f}")
     result["review"] = verdicts
     (cfg.output_dir / f"{lesson_id}.json").write_text(json.dumps(result, indent=2) + "\n")
-    return 0 if verdicts and all(line.endswith(": supported") for line in verdicts) else 1
+    return 0 if verdicts and all(sources.supported(line) for line in verdicts) else 1
 
 
 def show_evidence(cfg, prices, lesson_id):
@@ -368,6 +369,7 @@ def main(argv=None):
             load_prompt(cfg.prompts, cfg.prompt)
         except (PromptChanged, ValueError) as error:
             raise SystemExit(str(error))
+        cfg = replace(cfg, model=tomllib.loads((ROOT / "config.toml").read_text())["route"]["batch"]["model"])
         if args.action == "submit":
             batch_submit(cfg, args.lesson)
         else:

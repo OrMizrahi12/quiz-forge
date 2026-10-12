@@ -54,6 +54,8 @@ def run(meter, cfg, system, tools, act, ask, limits=Limits(), out=print, **extra
                 content, error = act(call)
             except Stop as stop:
                 return Outcome(str(stop), turn, "", calls, peak)
+            if error and not str(content).strip():  # the API rejects an is_error result with empty content
+                content = f"{call.name} failed with no message: check the input and try again"
             results.append({"type": "tool_result", "tool_use_id": call.id, "content": content, "is_error": error})
         messages += [{"role": "assistant", "content": reply.content}, {"role": "user", "content": results}]
     return Outcome("turn limit", limits.max_turns, "", calls, peak)
