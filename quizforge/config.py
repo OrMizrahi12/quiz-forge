@@ -26,6 +26,7 @@ class Config:
     similar: float
     ask_turns: int
     ask_usd: float
+    write_max_tokens: int | None = None  # [write] max_tokens: write's own cap; None keeps max_tokens
 
 
 def load_config(path=ROOT / "config.toml"):
@@ -50,4 +51,5 @@ def load_config(path=ROOT / "config.toml"):
         similar=data["bank"]["similar"],
         ask_turns=data["ask"]["max_turns"],
         ask_usd=data["ask"]["max_usd"],
+        write_max_tokens=data["write"]["max_tokens"],
     )

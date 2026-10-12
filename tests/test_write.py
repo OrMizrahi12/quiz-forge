@@ -9,7 +9,7 @@ from quizforge.config import ROOT, load_config
 from quizforge.meter import Meter
 
 # pinned: the budget math below assumes these ($1/$5 per MTok, 1500 tokens), whatever config.toml says
-BASE = replace(load_config(), model="claude-haiku-4-5-20251001", max_tokens=1500)
+BASE = replace(load_config(), model="claude-haiku-4-5-20251001", max_tokens=1500, write_max_tokens=1500)
 PRICES = usage.load_prices(ROOT / "pricing.toml")
 STEMS = [
     "A support team answers 3,000 short chat messages a day and wants each reply fast and cheap. Which tier fits?",
@@ -122,6 +122,24 @@ def test_done_when_every_question_is_supported_and_it_waits_in_pending(tmp_path)
     assert item["verdicts"] == SUPPORTED and item["stopped"] == "done (checker, round 1)"
     assert all(q["section"].startswith("L1.3#") for q in item["questions"])
     assert [p.name for p in cfg.bank.iterdir()] == ["pending"]  # write never reaches approved/
+
+
+def test_the_writer_and_the_checker_use_the_write_max_tokens(tmp_path):
+    cfg = settings(tmp_path, write_max_tokens=3000)
+    client = Fake(saves(), verdicts(*SUPPORTED))
+    run(cfg, client)
+    assert {r["max_tokens"] for r in client.requests} == {3000}
+
+
+def test_a_writer_tool_that_fails_without_a_message_still_returns_one(tmp_path, monkeypatch):
+    def broken(library, **inputs):
+        raise Exception()
+
+    monkeypatch.setattr(write.search, "search_library", broken)
+    cfg = settings(tmp_path)
+    act = write.writer_act(cfg, write.Job("L1.3", cfg.bank / "pending" / "L1.3.json"), lambda line: None)
+    content, error = act(use(1, "search_library", query="tiers", lesson_id="L1.3"))
+    assert error is True and content.strip() and "Exception" in content
 
 
 def test_a_question_that_isnt_supported_is_revised_in_a_fresh_context(tmp_path):

@@ -73,6 +73,13 @@ def test_a_tool_that_raises_stop_ends_the_task_and_nothing_more_is_sent():
     assert (result.stopped, meter.requests) == ("declined", 1)
 
 
+def test_a_tool_error_with_no_message_still_goes_back_with_one():
+    client = Script(reply("tool_use", use(1, "save_questions")), reply("end_turn", text("done")))
+    go(client, act=lambda call: ("", True))
+    result = client.requests[1]["messages"][2]["content"][0]
+    assert result["is_error"] is True and "save_questions failed" in result["content"]
+
+
 def test_a_reply_cut_off_at_max_tokens_stops_the_task():
     result, _ = go(Script(reply("max_tokens", text("Question 1: A team"))))
     assert result.stopped == "cut off"

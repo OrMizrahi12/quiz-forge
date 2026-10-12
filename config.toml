@@ -27,6 +27,7 @@ rejected_dir = "runs/rejected"
 rounds = 3               # drafts per job: the first, then up to 2 revisions after the checker's verdicts
 max_turns = 10           # requests in one writer or checker run
 max_usd = 0.15           # the whole job's budget, writer and checker together: spent, plus the next request's worst case
+max_tokens = 4000        # each writer or checker reply; room for thinking, which counts toward it ([limits] max_tokens stays for batch)
 
 [bank]
 path = "bank"            # pending/ (written by write), approved/ and declined/ (written only by review)

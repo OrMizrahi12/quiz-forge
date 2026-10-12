@@ -4,7 +4,7 @@ is, or a stop fires. Writer and checker share one meter, so Limits.max_usd is th
 Nothing here writes to bank/approved/: only review.py does, after a person's yes."""
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -112,9 +112,10 @@ def writer_act(cfg, job, out):
                 return done, False
             return f"no tool named {call.name!r}", True
         except Exception as problem:
+            message = str(problem) or f"{type(problem).__name__} with no message: check the input and try again"
             if call.name == "save_questions":
-                out(f"    save_questions: ERROR {str(problem)[:300]}")
-            return str(problem), True
+                out(f"    save_questions: ERROR {message[:300]}")
+            return message, True
 
     return run
 
@@ -184,6 +185,7 @@ def check(meter, cfg, job, limits, out=print):
 
 def write(meter, cfg, lesson_id, out=print):
     """One job: draft, check, revise, up to cfg.rounds drafts, within one turn limit per run and one budget for the job."""
+    cfg = replace(cfg, max_tokens=cfg.write_max_tokens or cfg.max_tokens)  # [write] max_tokens: room for thinking
     job = Job(lesson_id, cfg.bank / "pending" / f"{lesson_id}.json")
     if job.path.exists():
         raise Waiting(

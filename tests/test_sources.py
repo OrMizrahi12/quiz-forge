@@ -5,7 +5,7 @@ import pytest
 from quizforge.config import load_config
 from quizforge.library import load_lesson
 from quizforge.sanitize import clean
-from quizforge.sources import NotChecked, check_quote, review, run, run_all, tools
+from quizforge.sources import NotChecked, check_quote, review, run, run_all, supported, tools
 
 CFG = load_config()
 
@@ -110,3 +110,20 @@ def test_review_returns_every_result_in_one_user_message_and_reads_the_verdicts(
     assert [r["tool_use_id"] for r in second[2]["content"]] == ["toolu_1", "toolu_2"]
     assert calls == 2 and len(usages) == 2
     assert verdicts == ["Question 1: supported", "Question 2: not supported: the quote is about something else"]
+
+
+@pytest.mark.parametrize(
+    "line, expected",
+    [
+        ("Question 1: supported", True),
+        ("Question 1: supported.", True),
+        ("Question 1: supported, the quote is in the lesson and names the tier.", True),
+        ("Question 1: supported: the quote matches word for word.", True),
+        ("Question 2: not supported: the quote is not in the lesson", False),
+        ("Question 2: not supported", False),
+        ("Question 3: unsupported", False),
+        ("Question 3: no verdict", False),
+    ],
+)
+def test_supported_reads_the_word_after_the_colon(line, expected):
+    assert supported(line) is expected
