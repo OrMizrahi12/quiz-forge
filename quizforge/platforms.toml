@@ -1,0 +1,42 @@
+# Where Quiz Forge can run: one table per platform, from each platform's docs page (checked 2026-10-10).
+# missing = the features Quiz Forge uses that the platform's "Features not supported" list names.
+
+[anthropic]   # platform.claude.com/docs/en/api/overview
+client = "Anthropic"
+operator = "Anthropic"
+billing = "Anthropic"
+haiku_5_5 = "claude-haiku-5-5"
+residency = "inference_geo per request; workspace defaults"
+missing = []
+
+[aws]   # .../build-with-claude/claude-platform-on-aws#features-not-supported
+client = "AnthropicAWS"
+operator = "Anthropic, on AWS"
+billing = "AWS"
+haiku_5_5 = "claude-haiku-5-5"
+residency = "inference_geo per request"
+missing = []   # only toolsets Quiz Forge doesn't use, and HIPAA readiness
+
+[bedrock]   # .../build-with-claude/claude-in-amazon-bedrock#features-not-supported
+client = "AnthropicBedrockMantle"
+operator = "AWS"
+billing = "AWS"
+haiku_5_5 = "anthropic.claude-haiku-5-5"
+residency = "the region of the endpoint"
+missing = ["structured_outputs", "files", "batches", "models"]
+
+[google]   # .../build-with-claude/claude-on-vertex-ai#features-not-supported
+client = "AnthropicVertex"
+operator = "Google Cloud"
+billing = "Google Cloud"
+haiku_5_5 = "claude-haiku-5-5"
+residency = "the region of the endpoint"
+missing = ["files", "batches", "models"]
+
+[foundry]   # .../build-with-claude/claude-in-microsoft-foundry#feature-support
+client = "AnthropicFoundry"
+operator = "Microsoft or Anthropic"
+billing = "Azure Marketplace"
+haiku_5_5 = "claude-haiku-5-5"
+residency = "the US Data Zone deployment type"
+missing = ["batches", "models", "files"]   # files: on Azure-hosted deployments

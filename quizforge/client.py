@@ -1,7 +1,7 @@
 import anthropic
 from dotenv import load_dotenv
 
-from quizforge import retry, tracing
+from quizforge import platforms, retry, tracing
 
 # Claude 4.5 models and earlier accept the partial reply as the start of the assistant turn (prefill).
 # Newer models reject prefill, so they get the partial reply inside a user message instead (streaming docs).
@@ -13,7 +13,7 @@ def make_client(feature=None, asynchronous=False):
     """The one place client options are set. No feature: the SDK defaults. A feature: its [retry.<feature>]
     policy from config.toml, if it has one, and the tracing middleware (sync only: http_span isn't async)."""
     load_dotenv()  # reads ANTHROPIC_API_KEY from .env; the key is never printed
-    client = anthropic.AsyncAnthropic() if asynchronous else anthropic.Anthropic()
+    client = platforms.base_client(asynchronous)
     if feature is None:
         return client
     return client.with_options(**retry.options(feature), middleware=[tracing.http_span])
