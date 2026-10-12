@@ -3,10 +3,16 @@
 import sys
 
 from mcp import Client, StdioServerParameters
+from mcp.client.stdio import get_default_environment
 
 from quizforge.config import ROOT
 
-SERVER = StdioServerParameters(command=sys.executable, args=["-m", "mcp_server.server"], cwd=str(ROOT))
+SERVER = StdioServerParameters(
+    command=sys.executable,
+    args=["-m", "mcp_server.server"],
+    cwd=str(ROOT),
+    env={**get_default_environment(), "QF_HOME": str(ROOT)},  # the child gets only HOME, PATH, USER: name it
+)
 
 
 def connect(server=SERVER):
