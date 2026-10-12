@@ -22,7 +22,7 @@ Each requirement has a number, the phrase it comes from, and the check that prov
 | NFR-2 | Latency, regenerate | p95 under 60 s | the eval gate's p95 |
 | NFR-3 | Latency, bulk | overnight, done by 07:00 | the nightly job's log |
 | NFR-4 | Cost | generate within the quarter budget | `qf report` per feature |
-| NFR-5 | Data residency | US-only inference | to check: which models accept it |
+| NFR-5 | Data residency | US-only: `inference_geo="us"` | Haiku 4.5: a 400; Haiku 5.5, our route: 1.1x |
 | NFR-6 | No learner data in any request | 0 learner fields | the data map (8.2) and redaction tests |
 | NFR-7 | Quality | eval criteria (7.3) on every change | the CI gate |
 | NFR-8 | Maintainability | pinned models; 60 days' notice handled | a deprecation check |
