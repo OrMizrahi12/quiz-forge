@@ -43,6 +43,11 @@ def init(folder, library, name, audience):
         r"(?m)^item_writer = .*$", f'item_writer = "{mine}"   # qf init: {latest} with this audience', config
     )
     (folder / "config.toml").write_text(f'[deployment]\nname = "{name}"\n\n' + config)
+    (folder / "blueprint.toml").write_text(
+        "# This deployment's exam blueprint (FR-2): one domain per exam domain, its weight, and the lessons that teach it.\n"
+        "# qf init starts with one domain holding every lesson; split it to match your exam's blueprint.\n\n"
+        f'[[domain]]\nname = "All lessons"\nweight = 100\nlessons = {json.dumps(lessons)}\n'
+    )
     for case in ("cases.jsonl", "regression.jsonl"):
         (folder / "evals" / case).write_text(
             "".join(json.dumps({"lesson": lesson}) + "\n" for lesson in lessons[:CASES])
@@ -54,5 +59,6 @@ def init(folder, library, name, audience):
         f"library {library} ({len(lessons)} lessons)",
         f"prompt {mine}: {latest} for {audience}, locked",
         f"eval cases: {', '.join(lessons[:CASES])}",
+        "blueprint: one domain, every lesson (edit blueprint.toml to match your exam)",
         f"next: put this deployment's key in {folder / '.env'}, then QF_HOME={folder} qf generate --lesson {lessons[0]}",
     ]

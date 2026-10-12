@@ -1,15 +1,17 @@
 """Export the approved bank: a CSV, one row per question, or a Markdown review sheet, into runs/exports/.
-Reads bank/approved/ only, and only if it still matches the seal (security/integrity.py).
+Reads bank/approved/ only, and only if it still matches the seal (security/integrity.py). Each row carries its lesson's
+domain from the deployment's blueprint.toml (FR-2), so the platform can build domain-weighted tests.
 Usage: python -m quizforge export --format csv|md"""
 
 import csv
 import json
 
+from quizforge import plan
 from quizforge.config import ROOT
 from quizforge.security import integrity
 
-# The platform's import template may change: the CSV header and every row are built from this.
-CSV_COLUMNS = ("lesson", "scenario", "a", "b", "c", "d", "answer", "why", "quote")
+# The platform's import template may change: the CSV header and every row are built from this. domain: since 1.0.0.
+CSV_COLUMNS = ("lesson", "domain", "scenario", "a", "b", "c", "d", "answer", "why", "quote")
 
 EXPORT_DIR = ROOT / "runs" / "exports"
 FILES = {"csv": "approved.csv", "md": "approved.md"}
@@ -24,15 +26,23 @@ def load_approved(folder):
     return sorted(items, key=lambda item: (item[0], item[1]["scenario"]))
 
 
-def to_csv(items, path):
+def domains(cfg):
+    """lesson id -> domain, from the deployment's blueprint.toml ({} without one: the column stays empty)."""
+    path = cfg.bank.parent / plan.BLUEPRINT
+    return plan.domain_of(plan.load(path)) if path.exists() else {}
+
+
+def to_csv(items, path, domain=None):
+    domain = domain or {}
     with open(path, "w", newline="", encoding="utf-8") as f:
         out = csv.writer(f)
         out.writerow(CSV_COLUMNS)
         for lesson, q in items:
-            out.writerow([lesson if name == "lesson" else q[name] for name in CSV_COLUMNS])
+            known = {"lesson": lesson, "domain": domain.get(lesson, "")}
+            out.writerow([known[name] if name in known else q[name] for name in CSV_COLUMNS])
 
 
-def to_markdown(items, path):
+def to_markdown(items, path, domain=None):
     lines = [
         "# Approved practice questions",
         "",
@@ -42,7 +52,7 @@ def to_markdown(items, path):
     for lesson, q in items:
         if lesson != current:
             current, number = lesson, 0
-            lines += ["", f"## {lesson}"]
+            lines += ["", f"## {lesson}"] + (["", f"Domain: {domain[lesson]}"] if (domain or {}).get(lesson) else [])
         number += 1
         lines += ["", f"### {number}. {q['scenario']}", ""]
         lines += [f"- {letter}. {q[letter.lower()]}" for letter in "ABCD"]
@@ -63,6 +73,6 @@ def run(cfg, fmt, out_dir=EXPORT_DIR):
     items = load_approved(folder)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / FILES[fmt]
-    (to_csv if fmt == "csv" else to_markdown)(items, path)
+    (to_csv if fmt == "csv" else to_markdown)(items, path, domains(cfg))
     print(f"{len(items)} question(s) -> {path}")
     return 0
