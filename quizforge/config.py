@@ -1,8 +1,10 @@
+import os
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+CODE = Path(__file__).resolve().parent.parent  # this checkout: the code and the template's files
+ROOT = Path(os.environ.get("QF_HOME", CODE)).resolve()  # the deployment: its settings, library, bank and logs
 
 
 @dataclass(frozen=True)

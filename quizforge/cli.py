@@ -299,6 +299,11 @@ def main(argv=None):
     asks.add_argument("question")
     sub.add_parser("model", help="check the pinned model against the Models API")
     sub.add_parser("cost", help="total spend from the usage log")
+    ini = sub.add_parser("init", help="a deployment folder for another course library (then QF_HOME=<folder>)")
+    ini.add_argument("folder")
+    ini.add_argument("--library", required=True, help="a folder with MANIFEST.json and one <lesson>.md each")
+    ini.add_argument("--name", required=True)
+    ini.add_argument("--audience", required=True, help="who the questions are for, as the prompt says it")
     evl = sub.add_parser(
         "eval", help="--calibrate proves the judge; --gate holds generate to the criteria and baseline"
     )
@@ -316,6 +321,11 @@ def main(argv=None):
     rep.add_argument("--since", default="1d", help="how far back: 1d, 12h, 90m")
     rep.add_argument("--by", choices=["feature", "model"], default="feature")
     args = parser.parse_args(argv)
+    if args.command == "init":  # before load_config: a new deployment needs no settings yet
+        from quizforge.init import init
+
+        print("\n".join(init(args.folder, args.library, args.name, args.audience)))
+        return 0
 
     cfg = load_config()
     prices = usage.load_prices(ROOT / "pricing.toml")

@@ -1,0 +1,31 @@
+# Quiz Forge as a package: one install, many deployments (qf init, QF_HOME). Pins match requirements.txt.
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quiz-forge"
+dynamic = ["version"]
+description = "Practice exam questions from any course library, checked by code, a judge and a person"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic==1.11.0",
+    "anyio==4.15.1",
+    "claude-agent-sdk==0.2.165",
+    "mcp==2.3.0",
+    "opentelemetry-sdk==1.45.1",
+    "pydantic==2.13.5",
+    "python-dotenv==1.2.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "ruff==0.17.0"]
+
+[project.scripts]
+qf = "quizforge.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "quizforge.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["quizforge*", "mcp_server*", "evals*", "reviewer*"]

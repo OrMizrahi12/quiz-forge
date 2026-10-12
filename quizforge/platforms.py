@@ -4,9 +4,9 @@ import tomllib
 
 import anthropic
 
-from quizforge.config import ROOT
+from quizforge.config import CODE, ROOT
 
-PLATFORMS = tomllib.loads((ROOT / "quizforge/platforms.toml").read_text())
+PLATFORMS = tomllib.loads((CODE / "quizforge/platforms.toml").read_text())  # ships with the code
 USES = {   # the features Quiz Forge uses, and where
     "structured_outputs": "generate, repair, the screen (2.4, 8.1)",
     "files": "qf evidence (3.4)",
