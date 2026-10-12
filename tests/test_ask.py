@@ -11,7 +11,7 @@ from quizforge import usage
 from quizforge.config import ROOT, load_config
 from quizforge.meter import Meter
 
-CFG = load_config()
+CFG = replace(load_config(), model="claude-haiku-4-5-20251001")  # pinned: the budget test's math is at its $1/$5 prices
 PRICES = usage.load_prices(ROOT / "pricing.toml")
 
 

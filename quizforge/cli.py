@@ -3,6 +3,7 @@ import asyncio
 import json
 import re
 import sys
+import tomllib
 from dataclasses import replace
 from datetime import date
 
@@ -368,6 +369,7 @@ def main(argv=None):
             load_prompt(cfg.prompts, cfg.prompt)
         except (PromptChanged, ValueError) as error:
             raise SystemExit(str(error))
+        cfg = replace(cfg, model=tomllib.loads((ROOT / "config.toml").read_text())["route"]["batch"]["model"])
         if args.action == "submit":
             batch_submit(cfg, args.lesson)
         else:
